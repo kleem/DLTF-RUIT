@@ -20,6 +20,7 @@ import {
 } from "@mui/material";
 import {Add, Close, ContentCopy, Delete, Edit, Refresh, Save, Send, Upload, Visibility,} from "@mui/icons-material";
 import axios from "axios";
+import DistributionModal from "./DistributionModal.tsx";
 
 type ProbabilityDistribution = {
     type: string;
@@ -42,6 +43,7 @@ type Event = {
     dependOn: string | null;
     probabilityDistribution: ProbabilityDistribution;
     gasCost: number;
+    maxProbabilityMatches: number | null;
     relatedEvents: string[] | null;
 };
 
@@ -85,9 +87,18 @@ const getProbabilityDistribution = (event: Event) => {
 
     switch (type) {
         case "FIXED":
-            return {type, fixedTime: dist.fixedTime, tolerance: dist.tolerance};
+            return {
+                type,
+                fixedTime: dist.fixedTime,
+                tolerance: dist.tolerance,
+                limit: dist.limit
+            };
         case "UNIFORM":
-            return {type, value: dist.value};
+            return {
+                type,
+                value: dist.value,
+                limit: dist.limit
+            };
         case "NORMAL_SCALED":
         case "LOGNORMAL_SCALED":
             return {
@@ -95,15 +106,33 @@ const getProbabilityDistribution = (event: Event) => {
                 mean: dist.mean,
                 std: dist.std,
                 scalingFactorX: dist.scalingFactorX,
-                scalingFactorY: dist.scalingFactorY
+                scalingFactorY: dist.scalingFactorY,
+                limit: dist.limit
             };
         case "NORMAL":
         case "LOGNORMAL":
-            return {type, mean: dist.mean, std: dist.std, scalingFactor: dist.scalingFactor};
+            return {
+                type,
+                mean: dist.mean,
+                std: dist.std,
+                scalingFactor: dist.scalingFactor,
+                limit: dist.limit
+            };
         case "EXPONENTIAL_SCALED":
-            return {type, rate: dist.rate, scalingFactorX: dist.scalingFactorX, scalingFactorY: dist.scalingFactorY};
+            return {
+                type,
+                rate: dist.rate,
+                scalingFactorX: dist.scalingFactorX,
+                scalingFactorY: dist.scalingFactorY,
+                limit: dist.limit
+            };
         case "EXPONENTIAL":
-            return {type, rate: dist.rate, scalingFactor: dist.scalingFactor};
+            return {
+                type,
+                rate: dist.rate,
+                scalingFactor: dist.scalingFactor,
+                limit: dist.limit
+            };
         default:
             return {};
     }
@@ -112,6 +141,7 @@ const getProbabilityDistribution = (event: Event) => {
 const SimulationConfiguratorModalForm: React.FC = () => {
     const [open, setOpen] = useState(false);
     const [events, setEvents] = useState<Event[]>([]);
+    const [openDistributions, setOpenDistributions] = useState<boolean[]>([]);
     const [name, setName] = useState("Simulation");
 // Per cambiare la duration predefinita a 7 giorni (604800 secondi)
     const [duration, setDuration] = useState<number>(604800);
@@ -148,6 +178,7 @@ const SimulationConfiguratorModalForm: React.FC = () => {
             relatedEvents: null
         };
         setEvents([...events, newEvent]);
+        setOpenDistributions([...openDistributions, false])
         setExpandedEvent(events.length);
     };
 
@@ -162,7 +193,9 @@ const SimulationConfiguratorModalForm: React.FC = () => {
 
     const handleRemoveEvent = (index: number) => {
         const updated = events.filter((_, i) => i !== index);
+        const modals = openDistributions.filter((_, i) => i !== index);
         setEvents(updated);
+        setOpenDistributions(modals);
         if (expandedEvent === index) setExpandedEvent(null);
     };
 
@@ -206,6 +239,18 @@ const SimulationConfiguratorModalForm: React.FC = () => {
 
     const handleRemoveEntity = (index: number) => {
         setEntities(prev => prev.filter((_, i) => i !== index));
+    };
+
+    const handleOpenModalDistribution = (index: number) => {
+        const updated = [...openDistributions];
+        updated[index] = true;
+        setOpenDistributions(updated);
+    };
+
+    const handleCloseModalDistribution = (index: number) => {
+        const updated = [...openDistributions];
+        updated[index] = false;
+        setOpenDistributions(updated);
     };
 
     const handleSubmit = async (e?: React.FormEvent) => {
@@ -276,7 +321,10 @@ const SimulationConfiguratorModalForm: React.FC = () => {
                         label="Tolerance (s)"
                         value={dist.tolerance || ""}
                         onChange={(e) => handleEventChange(index, "probabilityDistribution.tolerance", parseFloat(e.target.value))}
-                    />
+                    />,
+                    <TextField {...commonProps} key="limit" label="Limit"
+                               value={dist.limit || ""}
+                               onChange={(e) => handleEventChange(index, "probabilityDistribution.limit", parseFloat(e.target.value))}/>
                 );
                 break;
             case "UNIFORM":
@@ -287,7 +335,10 @@ const SimulationConfiguratorModalForm: React.FC = () => {
                         label="Value"
                         value={dist.value || ""}
                         onChange={(e) => handleEventChange(index, "probabilityDistribution.value", parseFloat(e.target.value))}
-                    />
+                    />,
+                    <TextField {...commonProps} key="limit" label="Limit"
+                               value={dist.limit || ""}
+                               onChange={(e) => handleEventChange(index, "probabilityDistribution.limit", parseFloat(e.target.value))}/>
                 );
                 break;
             case "NORMAL":
@@ -313,7 +364,10 @@ const SimulationConfiguratorModalForm: React.FC = () => {
                         label="Scaling Factor"
                         value={dist.scalingFactor || ""}
                         onChange={(e) => handleEventChange(index, "probabilityDistribution.scalingFactor", parseFloat(e.target.value))}
-                    />
+                    />,
+                    <TextField {...commonProps} key="limit" label="Limit"
+                               value={dist.limit || ""}
+                               onChange={(e) => handleEventChange(index, "probabilityDistribution.limit", parseFloat(e.target.value))}/>
                 );
                 break;
             case "NORMAL_SCALED":
@@ -346,7 +400,10 @@ const SimulationConfiguratorModalForm: React.FC = () => {
                         label="Scaling Factor Y"
                         value={dist.scalingFactorY || ""}
                         onChange={(e) => handleEventChange(index, "probabilityDistribution.scalingFactorY", parseFloat(e.target.value))}
-                    />
+                    />,
+                    <TextField {...commonProps} key="limit" label="Limit"
+                               value={dist.limit || ""}
+                               onChange={(e) => handleEventChange(index, "probabilityDistribution.limit", parseFloat(e.target.value))}/>
                 );
                 break;
             case "EXPONENTIAL":
@@ -364,7 +421,10 @@ const SimulationConfiguratorModalForm: React.FC = () => {
                         label="Scaling Factor"
                         value={dist.scalingFactor || ""}
                         onChange={(e) => handleEventChange(index, "probabilityDistribution.scalingFactor", parseFloat(e.target.value))}
-                    />
+                    />,
+                    <TextField {...commonProps} key="limit" label="Limit"
+                               value={dist.limit || ""}
+                               onChange={(e) => handleEventChange(index, "probabilityDistribution.limit", parseFloat(e.target.value))}/>
                 );
                 break;
             case "EXPONENTIAL_SCALED":
@@ -389,7 +449,10 @@ const SimulationConfiguratorModalForm: React.FC = () => {
                         label="Scaling Factor Y"
                         value={dist.scalingFactorY || ""}
                         onChange={(e) => handleEventChange(index, "probabilityDistribution.scalingFactorY", parseFloat(e.target.value))}
-                    />
+                    />,
+                    <TextField {...commonProps} key="limit" label="Limit"
+                               value={dist.limit || ""}
+                               onChange={(e) => handleEventChange(index, "probabilityDistribution.limit", parseFloat(e.target.value))}/>
                 );
                 break;
             default:
@@ -473,8 +536,8 @@ const SimulationConfiguratorModalForm: React.FC = () => {
                                         <TextField
                                             label="Simulation Name"
                                             required
-                                            error={!name }
-                                            helperText={(!name ) ? "Name is required" : " "}
+                                            error={!name}
+                                            helperText={(!name) ? "Name is required" : " "}
                                             fullWidth
                                             size="small"
                                             value={name}
@@ -643,6 +706,14 @@ const SimulationConfiguratorModalForm: React.FC = () => {
                                                     value={event.gasCost}
                                                     onChange={(e) => handleEventChange(index, "gasCost", Number(e.target.value))}
                                                 />
+                                                <TextField
+                                                    label="MAX Probability Matches"
+                                                    type="number"
+                                                    size="small"
+                                                    fullWidth
+                                                    value={event.maxProbabilityMatches}
+                                                    onChange={(e) => handleEventChange(index, "maxProbabilityMatches", Number(e.target.value))}
+                                                />
                                                 {/* Nuova riga singola per Instance Of */}
                                                 <Grid item xs={12}>
                                                     <TextField
@@ -689,7 +760,17 @@ const SimulationConfiguratorModalForm: React.FC = () => {
                                                     size="small"
                                                     fullWidth
                                                     value={event.probabilityDistribution.type}
-                                                    onChange={(e) => handleEventChange(index, "probabilityDistribution.type", e.target.value)}
+                                                    onChange={(e) => {
+                                                        const selectedType = e.target.value;
+
+                                                        // Aggiorna il tipo
+                                                        const updatedEvents = [...events];
+                                                        updatedEvents[index].probabilityDistribution = { type: selectedType }; // reset params
+                                                        setEvents(updatedEvents);
+
+                                                        // Apre la modale per configurare la distribuzione
+                                                        handleOpenModalDistribution(index);
+                                                    }}
                                                 >
                                                     {distributionTypes.map((opt) => (
                                                         <MenuItem key={opt.value} value={opt.value}>
@@ -697,6 +778,19 @@ const SimulationConfiguratorModalForm: React.FC = () => {
                                                         </MenuItem>
                                                     ))}
                                                 </TextField>
+
+                                                <DistributionModal
+                                                    open={openDistributions[index]}
+                                                    initialValue={event.probabilityDistribution}
+                                                    onClose={() => handleCloseModalDistribution(index)}
+                                                    onConfirm={(res) => {
+                                                        const updated = [...events];
+                                                        updated[index].probabilityDistribution = res;
+                                                        setEvents(updated);
+                                                        handleCloseModalDistribution(index);
+                                                    }}
+                                                />
+
                                                 {renderDistributionFields(event, index)}
                                             </Stack>
                                         </Paper>

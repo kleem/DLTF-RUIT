@@ -12,6 +12,7 @@ import DynamicChartConfigurator from "./components/DynamicChartConfigurator.tsx"
 import AdvancedChartConfigurator from "./components/AdvancedChartConfigurator.tsx";
 import GraphRequestForm from "./components/Graph/GraphRequestForm.tsx";
 import GraphRequestOldForm from "./components/GraphRequestForm.tsx";
+import DistributionVisualizer from "./components/DistributionVisualizer.tsx";
 
 function App() {
     return (
@@ -28,6 +29,7 @@ function App() {
                 <Route path="/test3" element={<AdvancedChartConfigurator />} /> {/* Rotta per la pagina dei jobs */}
                 <Route path="/graph" element={<GraphRequestForm/>} /> {/* Rotta per la pagina dei jobs */}
                 <Route path="/test4" element={<GraphRequestOldForm/>} /> {/* Rotta per la pagina dei jobs */}
+                <Route path="/tuner" element={<DistributionVisualizer/>} /> {/* Rotta per la pagina dei jobs */}
             </Routes>
         </Router>
     )
