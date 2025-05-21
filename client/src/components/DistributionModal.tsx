@@ -6,6 +6,7 @@ import {
     DialogActions,
     DialogContent,
     DialogTitle,
+    Divider,
     FormControl,
     InputLabel,
     MenuItem,
@@ -14,54 +15,9 @@ import {
     Typography
 } from '@mui/material';
 import {Line} from 'react-chartjs-2';
-import {CategoryScale, Chart, LinearScale, LineElement, PointElement} from 'chart.js';
-import {
-    ExponentialDistributionParams,
-    ExponentialScaledDistributionParams,
-    FixedDistributionParams,
-    LognormalDistributionParams,
-    LognormalScaledDistributionParams,
-    NormalDistributionParams,
-    NormalScaledDistributionParams,
-    UniformContinuousDistributionParams,
-    UniformDistributionParams
-} from "../types.ts";
+import {CategoryScale, Chart, LinearScale, LineElement, LogarithmicScale, PointElement} from 'chart.js';
 
-Chart.register(LineElement, PointElement, CategoryScale, LinearScale);
-
-type DistributionType =
-    | 'FIXED'
-    | 'UNIFORM'
-    | 'UNIFORM_CONTINUOUS_SCALED'
-    | 'NORMAL'
-    | 'NORMAL_SCALED'
-    | 'LOGNORMAL'
-    | 'LOGNORMAL_SCALED'
-    | 'EXPONENTIAL'
-    | 'EXPONENTIAL_SCALED';
-
-export type DistributionParamsTypes =
-    ExponentialDistributionParams
-    | ExponentialScaledDistributionParams
-    | UniformDistributionParams
-    | UniformContinuousDistributionParams
-    | FixedDistributionParams
-    | NormalDistributionParams
-    | NormalScaledDistributionParams
-    | LognormalDistributionParams
-    | LognormalScaledDistributionParams;
-
-export interface DistributionParams extends DistributionParamsTypes {
-    type: DistributionType;
-
-}
-
-interface Props {
-    open: boolean;
-    onClose: () => void;
-    onConfirm: (config: DistributionParams) => void;
-    initialValue?: DistributionParams;
-}
+Chart.register(LineElement, PointElement, CategoryScale, LinearScale, LogarithmicScale);
 
 const DistributionModal: React.FC<Props> = ({open, onClose, onConfirm, initialValue}) => {
     const [distribution, setDistribution] = useState<DistributionType>(initialValue?.type || 'NORMAL');
@@ -73,12 +29,17 @@ const DistributionModal: React.FC<Props> = ({open, onClose, onConfirm, initialVa
         max: 100,
         mean: 100,
         std: 10,
+        scalingFactorX: 0.1,
+        scalingFactorY: 0.1,
         scalingFactor: 1,
         amplitude: 1,
         rate: 0.01,
         time: 1,
         ...initialValue
     });
+    const [previewWindow, setPreviewWindow] = useState<number>(1000);
+    const [yRange, setYRange] = useState<number>(1);
+    const [yScaleType, setYScaleType] = useState<'linear' | 'logarithmic'>('linear');
 
     const handleParamChange = (name: keyof DistributionParams) => (_: Event, value: number | number[]) => {
         setParams(prev => ({...prev, [name]: value as number}));
@@ -91,7 +52,7 @@ const DistributionModal: React.FC<Props> = ({open, onClose, onConfirm, initialVa
     const getProb = (t: number): number => {
         const {
             fixedTime, value, min, max,
-            mean, std, scalingFactor = 1, amplitude = 1, rate
+            mean, std, scalingFactor = 1, amplitude = 1, rate, scalingFactorX, scalingFactorY
         } = params;
 
         const realTime = t * scalingFactor;
@@ -101,20 +62,18 @@ const DistributionModal: React.FC<Props> = ({open, onClose, onConfirm, initialVa
                 return t >= (fixedTime!) && t <= (fixedTime!) ? 1 : 0;
             case 'UNIFORM':
                 return value ?? 0;
-            // case 'UNIFORM_CONTINUOUS_SCALED':
-            //     return realTime >= (min ?? 0) && realTime <= (max ?? 1) ? 1 / ((max ?? 1) - (min ?? 0)) : 0;
             case 'NORMAL':
                 return normal(t, mean!, std!, scalingFactor);
             case 'NORMAL_SCALED':
-                return amplitude * normal(realTime, mean!, std!);
+                return normalScaled(t, mean!, std!, scalingFactorX, scalingFactorY);
             case 'LOGNORMAL':
-                return lognormal(t, mean!, std!);
+                return lognormal(t, mean!, std!, scalingFactor);
             case 'LOGNORMAL_SCALED':
-                return amplitude * lognormal(realTime, mean!, std!);
+                return lognormalScaled(realTime, mean!, std!, scalingFactorX, scalingFactorY);
             case 'EXPONENTIAL':
-                return rate! * Math.exp(-rate! * t);
+                return exponential(t, rate!, scalingFactor);
             case 'EXPONENTIAL_SCALED':
-                return amplitude * rate! * Math.exp(-rate! * realTime);
+                return exponentialScaled(realTime, rate!, scalingFactorX, scalingFactorY);
             default:
                 return 0;
         }
@@ -125,26 +84,51 @@ const DistributionModal: React.FC<Props> = ({open, onClose, onConfirm, initialVa
         const exp = -1 * (((realTime - mean) * (realTime - mean)) / (2 * std * std));
         const ratio = Math.sqrt(2 * std * std * Math.PI);
         return (1 / ratio) * Math.exp(exp);
-
-        // const coeff = 1 / (std * Math.sqrt(2 * Math.PI));
-        // const exp = Math.exp(-Math.pow(x - mean, 2) / (2 * std * std));
-        // return coeff * exp;
     };
 
-    const lognormal = (x: number, mean: number, std: number) => {
-        if (x <= 0) return 0;
-        const coeff = 1 / (x * std * Math.sqrt(2 * Math.PI));
-        const exp = Math.exp(-Math.pow(Math.log(x) - mean, 2) / (2 * std * std));
-        return coeff * exp;
+    const normalScaled = (time: number, mean: number, std: number, scalingFactorX: number, scalingFactorY: number) => {
+        const realTime = time * scalingFactorX;
+        const exp = -1 * (((realTime - mean) * (realTime - mean)) / (2 * std * std));
+        const ratio = Math.sqrt(2 * std * std * Math.PI);
+        return (scalingFactorY / ratio) * Math.exp(exp);
+    };
+
+    const lognormal = (time: number, mean: number, std: number, scalingFactor: number) => {
+        const realTime = time * scalingFactor;
+        if (realTime == 0)
+            return 0;
+        const exp = -1 * (Math.log(realTime) - mean) * (Math.log(realTime) - mean) / (2 * std * std);
+        const ratio = realTime * std * Math.sqrt(2 * Math.PI);
+        return 1 / ratio * Math.exp(exp);
+    };
+    const lognormalScaled = (time: number, mean: number, std: number, scalingFactorX: number, scalingFactorY: number) => {
+        const realTime = time * scalingFactorX;
+        if (realTime == 0)
+            return 0;
+        const exp = -1 * (Math.log(realTime) - mean) * (Math.log(realTime) - mean) / (2 * std * std);
+        const ratio = realTime * std * Math.sqrt(2 * Math.PI);
+        return scalingFactorY / ratio * Math.exp(exp);
+    };
+
+    const exponential = (time: number, rate: number, scalingFactor: number) => {
+        const realTime = time * scalingFactor;
+        return rate * Math.exp(-rate * realTime);
+    };
+
+    const exponentialScaled = (time: number, rate: number, scalingFactorX: number, scalingFactorY: number) => {
+        const realTime = time * scalingFactorX;
+        return scalingFactorY * rate * Math.exp(-1 * rate * realTime);
     };
 
     const generateData = () => {
         const data: { x: number, y: number }[] = [];
-        for (let t = 0; t < 500; t++) {
+        for (let t = 0; t < previewWindow; t++) {
             data.push({x: t, y: getProb(t)});
         }
         return data;
     };
+
+    const maxY = Math.max(...generateData().map(d => d.y));
 
     return (
         <Dialog open={open} onClose={onClose} maxWidth="md" fullWidth>
@@ -169,25 +153,31 @@ const DistributionModal: React.FC<Props> = ({open, onClose, onConfirm, initialVa
                         </Select>
                     </FormControl>
 
+                    <Divider textAlign={'left'}>Graphs controls preview</Divider>
+                    <Typography>Time (seconds): {previewWindow}</Typography>
+                    <Slider min={100} max={20000} step={100} value={previewWindow}
+                            onChange={(_, v) => setPreviewWindow(v as number)} sx={{mb: 2}}/>
+                    <Typography>Probability: {yRange}</Typography>
+                    <Slider min={0} max={1.1} step={0.01} value={yRange}
+                            onChange={(_, v) => setYRange(v as number)} sx={{mb: 2}}/>
+                    <Divider textAlign={'left'}>Distribution Parameters</Divider>
+                    {/*<FormControl sx={{mb: 2, minWidth: 200}}>*/}
+                    {/*    <InputLabel>Y Axis Scale</InputLabel>*/}
+                    {/*    <Select*/}
+                    {/*        value={yScaleType}*/}
+                    {/*        label="Y Axis Scale"*/}
+                    {/*        onChange={e => setYScaleType(e.target.value as 'linear' | 'logarithmic')}*/}
+                    {/*    >*/}
+                    {/*        <MenuItem value="linear">Linear</MenuItem>*/}
+                    {/*        <MenuItem value="logarithmic">Log</MenuItem>*/}
+                    {/*    </Select>*/}
+                    {/*</FormControl>*/}
+
                     {distribution === 'FIXED' && (
                         <>
-                            {/*<Text>{'time: one day(2592000) one month (864000) ten days (604800) seven days  (1209600) two weeks'}</Text>*/}
-                            {/*<Typography>Simulation Time: {params.time}</Typography>*/}
-                            {/*/!*time - one day//2592000; one month//864000; ten days//604800 seven days  //  1209600 two weeks*!/*/}
-                            {/*<Slider min={0} max={time} value={params.time}*/}
-                            {/*        onChange={handleParamChange('time')}/>*/}
-
-                            {/*86.400 secondi (1 giorno)
-	•	604.800 secondi (7 giorni)
-	•	fino a 2.592.000 secondi (30 giorni)*/}
-
                             <Typography>Fixed Time: {params.fixedTime}</Typography>
-                            <Slider min={0} max={500} value={params.fixedTime}
+                            <Slider min={0} max={previewWindow} value={params.fixedTime}
                                     onChange={handleParamChange('fixedTime')}/>
-
-                            {/*<Typography>Tolerance: {params.tolerance}</Typography>*/}
-                            {/*<Slider min={0} max={100} value={params.tolerance}*/}
-                            {/*        onChange={handleParamChange('tolerance')}/>*/}
                         </>
                     )}
 
@@ -202,44 +192,82 @@ const DistributionModal: React.FC<Props> = ({open, onClose, onConfirm, initialVa
                     {distribution === 'UNIFORM_CONTINUOUS_SCALED' && (
                         <>
                             <Typography>Min: {params.min}</Typography>
-                            <Slider min={0} max={500} value={params.min} onChange={handleParamChange('min')}/>
+                            <Slider min={0} max={previewWindow} value={params.min} onChange={handleParamChange('min')}/>
                             <Typography>Max: {params.max}</Typography>
-                            <Slider min={0} max={500} value={params.max} onChange={handleParamChange('max')}/>
+                            <Slider min={0} max={previewWindow} value={params.max} onChange={handleParamChange('max')}/>
                             <Typography>Scaling Factor: {params.scalingFactor}</Typography>
                             <Slider min={0.01} max={5} step={0.01} value={params.scalingFactor}
                                     onChange={handleParamChange('scalingFactor')}/>
                         </>
                     )}
 
-                    {distribution.includes('NORMAL') || distribution.includes('LOGNORMAL') ? (
+                    {(distribution === 'NORMAL' || distribution === 'LOGNORMAL') && (
                         <>
                             <Typography>Mean: {params.mean}</Typography>
-                            <Slider min={1} max={200} value={params.mean} onChange={handleParamChange('mean')}/>
+                            <Slider min={1} max={previewWindow} value={params.mean}
+                                    onChange={handleParamChange('mean')}/>
                             <Typography>Std Dev: {params.std}</Typography>
                             <Slider min={1} max={100} value={params.std} onChange={handleParamChange('std')}/>
                             <Typography>Scaling Factor: {params.scalingFactor}</Typography>
-                            <Slider min={0.01} max={5} step={0.01} value={params.scalingFactor}
-                                    onChange={handleParamChange('scalingFactor')}/>                        </>
-                    ) : null}
-
-                    {distribution.includes('SCALED') ? (
-                        <>
-                            <Typography>Scaling Factor: {params.scalingFactor}</Typography>
-                            <Slider min={0.01} max={5} step={0.01} value={params.scalingFactor}
+                            <Slider min={0.0001} max={5} step={0.0001} value={params.scalingFactor}
                                     onChange={handleParamChange('scalingFactor')}/>
-                            <Typography>Amplitude: {params.amplitude}</Typography>
-                            <Slider min={0.01} max={5} step={0.01} value={params.amplitude}
-                                    onChange={handleParamChange('amplitude')}/>
                         </>
-                    ) : null}
+                    )}
 
-                    {distribution.includes('EXPONENTIAL') ? (
+                    {(distribution === 'NORMAL_SCALED' || distribution === 'LOGNORMAL_SCALED') && (
+                        <>
+                            <Typography>Mean: {params.mean}</Typography>
+                            <Slider min={1} max={previewWindow} value={params.mean}
+                                    onChange={handleParamChange('mean')}/>
+                            <Typography>Std Dev: {params.std}</Typography>
+                            <Slider min={1} max={100} value={params.std} onChange={handleParamChange('std')}/>
+                            <Typography>Scaling FactorX: {params.scalingFactorX}</Typography>
+                            <Slider min={0.01} max={5} step={0.01} value={params.scalingFactorX}
+                                    onChange={handleParamChange('scalingFactorX')}/>
+                            <Typography>Scaling FactorY: {params.scalingFactorY}</Typography>
+                            <Slider min={0.01} max={25} step={0.01} value={params.scalingFactorY}
+                                    onChange={handleParamChange('scalingFactorY')}/>
+                        </>
+                    )}
+
+                    {/*{distribution.includes('SCALED') && (*/}
+                    {/*    <>*/}
+                    {/*        <Typography>Scaling Factor: {params.scalingFactor}</Typography>*/}
+                    {/*        <Slider min={0.01} max={5} step={0.01} value={params.scalingFactor}*/}
+                    {/*                onChange={handleParamChange('scalingFactor')}/>*/}
+                    {/*        <Typography>Amplitude: {params.amplitude}</Typography>*/}
+                    {/*        <Slider min={0.01} max={5} step={0.01} value={params.amplitude}*/}
+                    {/*                onChange={handleParamChange('amplitude')}/>*/}
+                    {/*    </>*/}
+                    {/*)}*/}
+
+                    {distribution.includes('EXPONENTIAL') && (
                         <>
                             <Typography>Rate (λ): {params.rate}</Typography>
                             <Slider min={0.0001} max={1} step={0.0001} value={params.rate}
                                     onChange={handleParamChange('rate')}/>
+                            <Typography>Scaling Factor: {params.scalingFactor}</Typography>
+                            <Slider min={0.0001} max={5} step={0.0001} value={params.scalingFactor}
+                                    onChange={handleParamChange('scalingFactor')}/>
+
                         </>
-                    ) : null}
+                    )}
+
+                    {distribution.includes('EXPONENTIAL_SCALED') && (
+                        <>
+                            <Typography>Rate (λ): {params.rate}</Typography>
+                            <Slider min={0.0001} max={1} step={0.0001} value={params.rate}
+                                    onChange={handleParamChange('rate')}/>
+                            <Typography>Scaling FactorX: {params.scalingFactorX}</Typography>
+                            <Slider min={0.01} max={5} step={0.01} value={params.scalingFactorX}
+                                    onChange={handleParamChange('scalingFactorX')}/>
+                            <Typography>Scaling FactorY: {params.scalingFactorY}</Typography>
+                            <Slider min={0.01} max={25} step={0.01} value={params.scalingFactorY}
+                                    onChange={handleParamChange('scalingFactorY')}/>
+                        </>
+                    )}
+
+                    <Typography variant="body2" sx={{mb: 1}}>Max Y ≈ {maxY.toExponential(2)}</Typography>
 
                     <Line
                         data={{
@@ -255,7 +283,12 @@ const DistributionModal: React.FC<Props> = ({open, onClose, onConfirm, initialVa
                             responsive: true,
                             scales: {
                                 x: {type: 'linear', title: {display: true, text: 'Time'}},
-                                y: {beginAtZero: true, title: {display: true, text: 'Probability'}, min: 0, max: 1}
+                                y: {
+                                    max: yRange,
+                                    // type: yScaleType,
+                                    title: {display: true, text: 'Probability'},
+                                    beginAtZero: true,
+                                }
                             }
                         }}
                     />

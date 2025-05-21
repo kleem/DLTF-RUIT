@@ -90,14 +90,13 @@ const getProbabilityDistribution = (event: Event) => {
             return {
                 type,
                 fixedTime: dist.fixedTime,
-                tolerance: dist.tolerance,
-                limit: dist.limit
+
             };
         case "UNIFORM":
             return {
                 type,
                 value: dist.value,
-                limit: dist.limit
+
             };
         case "NORMAL_SCALED":
         case "LOGNORMAL_SCALED":
@@ -107,7 +106,7 @@ const getProbabilityDistribution = (event: Event) => {
                 std: dist.std,
                 scalingFactorX: dist.scalingFactorX,
                 scalingFactorY: dist.scalingFactorY,
-                limit: dist.limit
+
             };
         case "NORMAL":
         case "LOGNORMAL":
@@ -116,7 +115,7 @@ const getProbabilityDistribution = (event: Event) => {
                 mean: dist.mean,
                 std: dist.std,
                 scalingFactor: dist.scalingFactor,
-                limit: dist.limit
+
             };
         case "EXPONENTIAL_SCALED":
             return {
@@ -124,14 +123,14 @@ const getProbabilityDistribution = (event: Event) => {
                 rate: dist.rate,
                 scalingFactorX: dist.scalingFactorX,
                 scalingFactorY: dist.scalingFactorY,
-                limit: dist.limit
+
             };
         case "EXPONENTIAL":
             return {
                 type,
                 rate: dist.rate,
                 scalingFactor: dist.scalingFactor,
-                limit: dist.limit
+
             };
         default:
             return {};
@@ -322,9 +321,6 @@ const SimulationConfiguratorModalForm: React.FC = () => {
                         value={dist.tolerance || ""}
                         onChange={(e) => handleEventChange(index, "probabilityDistribution.tolerance", parseFloat(e.target.value))}
                     />,
-                    <TextField {...commonProps} key="limit" label="Limit"
-                               value={dist.limit || ""}
-                               onChange={(e) => handleEventChange(index, "probabilityDistribution.limit", parseFloat(e.target.value))}/>
                 );
                 break;
             case "UNIFORM":
@@ -336,9 +332,6 @@ const SimulationConfiguratorModalForm: React.FC = () => {
                         value={dist.value || ""}
                         onChange={(e) => handleEventChange(index, "probabilityDistribution.value", parseFloat(e.target.value))}
                     />,
-                    <TextField {...commonProps} key="limit" label="Limit"
-                               value={dist.limit || ""}
-                               onChange={(e) => handleEventChange(index, "probabilityDistribution.limit", parseFloat(e.target.value))}/>
                 );
                 break;
             case "NORMAL":
@@ -365,9 +358,6 @@ const SimulationConfiguratorModalForm: React.FC = () => {
                         value={dist.scalingFactor || ""}
                         onChange={(e) => handleEventChange(index, "probabilityDistribution.scalingFactor", parseFloat(e.target.value))}
                     />,
-                    <TextField {...commonProps} key="limit" label="Limit"
-                               value={dist.limit || ""}
-                               onChange={(e) => handleEventChange(index, "probabilityDistribution.limit", parseFloat(e.target.value))}/>
                 );
                 break;
             case "NORMAL_SCALED":
@@ -401,9 +391,6 @@ const SimulationConfiguratorModalForm: React.FC = () => {
                         value={dist.scalingFactorY || ""}
                         onChange={(e) => handleEventChange(index, "probabilityDistribution.scalingFactorY", parseFloat(e.target.value))}
                     />,
-                    <TextField {...commonProps} key="limit" label="Limit"
-                               value={dist.limit || ""}
-                               onChange={(e) => handleEventChange(index, "probabilityDistribution.limit", parseFloat(e.target.value))}/>
                 );
                 break;
             case "EXPONENTIAL":
@@ -422,9 +409,6 @@ const SimulationConfiguratorModalForm: React.FC = () => {
                         value={dist.scalingFactor || ""}
                         onChange={(e) => handleEventChange(index, "probabilityDistribution.scalingFactor", parseFloat(e.target.value))}
                     />,
-                    <TextField {...commonProps} key="limit" label="Limit"
-                               value={dist.limit || ""}
-                               onChange={(e) => handleEventChange(index, "probabilityDistribution.limit", parseFloat(e.target.value))}/>
                 );
                 break;
             case "EXPONENTIAL_SCALED":
@@ -450,9 +434,6 @@ const SimulationConfiguratorModalForm: React.FC = () => {
                         value={dist.scalingFactorY || ""}
                         onChange={(e) => handleEventChange(index, "probabilityDistribution.scalingFactorY", parseFloat(e.target.value))}
                     />,
-                    <TextField {...commonProps} key="limit" label="Limit"
-                               value={dist.limit || ""}
-                               onChange={(e) => handleEventChange(index, "probabilityDistribution.limit", parseFloat(e.target.value))}/>
                 );
                 break;
             default:
@@ -765,7 +746,7 @@ const SimulationConfiguratorModalForm: React.FC = () => {
 
                                                         // Aggiorna il tipo
                                                         const updatedEvents = [...events];
-                                                        updatedEvents[index].probabilityDistribution = { type: selectedType }; // reset params
+                                                        updatedEvents[index].probabilityDistribution = {type: selectedType}; // reset params
                                                         setEvents(updatedEvents);
 
                                                         // Apre la modale per configurare la distribuzione
