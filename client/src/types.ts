@@ -53,3 +53,18 @@ export interface ExponentialScaledDistributionParams extends  TimeDependingDistr
     scalingFactorX: number
     scalingFactorY: number
 }
+
+export type DistributionType = 'FIXED' | 'UNIFORM' |  'NORMAL' | 'NORMAL_SCALED' | 'EXPONENTIAL' | 'EXPONENTIAL_SCALED' | 'LOGNORMAL' | 'LOGNORMAL_SCALED';
+
+export interface DistributionParams {
+    type: DistributionType;
+    fixedTime?: number;
+    value?: number;
+    mean?: number;
+    std?: number;
+    scalingFactorX?: number;
+    scalingFactorY?: number;
+    scalingFactor?: number;
+    rate?: number;
+    time?: number;
+}

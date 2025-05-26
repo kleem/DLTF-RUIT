@@ -2,7 +2,7 @@ import React, {useState} from "react";
 import {
     Box,
     Button,
-    Chip,
+    Chip, Collapse,
     Dialog,
     DialogActions,
     DialogContent,
@@ -21,13 +21,24 @@ import {
 import {Add, Close, ContentCopy, Delete, Edit, Refresh, Save, Send, Upload, Visibility,} from "@mui/icons-material";
 import axios from "axios";
 import DistributionModal from "./DistributionModal.tsx";
+import {DistributionType} from "../types.ts";
+import {defaultParamsByDistribution} from "./distributionConfigs.ts";
+import {
+    exponential,
+    exponentialScaled, getProbFromParams,
+    lognormal,
+    lognormalScaled,
+    normal,
+    normalScaled
+} from "./distributionFormulas.ts";
+import {Line} from "react-chartjs-2";
 
 type ProbabilityDistribution = {
-    type: string;
+    type: DistributionType;
     [key: string]: any;
 };
 
-type SimulationConfig = {
+export type SimulationConfig = {
     entities: string[];
     events: Event[];
     name: string;
@@ -142,10 +153,10 @@ const SimulationConfiguratorModalForm: React.FC = () => {
     const [events, setEvents] = useState<Event[]>([]);
     const [openDistributions, setOpenDistributions] = useState<boolean[]>([]);
     const [name, setName] = useState("Simulation");
-// Per cambiare la duration predefinita a 7 giorni (604800 secondi)
+    // Per cambiare la duration predefinita a 7 giorni (604800 secondi)
     const [duration, setDuration] = useState<number>(604800);
 
-// Per cambiare l'aggregation predefinita a minuti (60 secondi)
+    // Per cambiare l'aggregation predefinita a minuti (60 secondi)
     const [aggregation, setAggregation] = useState<number>(60);
     const [entityInput, setEntityInput] = useState("");
     const [entities, setEntities] = useState<string[]>([]);
@@ -180,6 +191,7 @@ const SimulationConfiguratorModalForm: React.FC = () => {
         setOpenDistributions([...openDistributions, false])
         setExpandedEvent(events.length);
     };
+    const [showAllDistributions, setShowAllDistributions] = useState<boolean>(false);
 
     const handleImportConfig = (config: SimulationConfig) => {
         setName(config.name);
@@ -335,6 +347,30 @@ const SimulationConfiguratorModalForm: React.FC = () => {
                 );
                 break;
             case "NORMAL":
+                fields.push(
+                    <TextField
+                        {...commonProps}
+                        key="mean"
+                        label="Mean"
+                        value={dist.mean || ""}
+                        onChange={(e) => handleEventChange(index, "probabilityDistribution.mean", parseFloat(e.target.value))}
+                    />,
+                    <TextField
+                        {...commonProps}
+                        key="std"
+                        label="Standard Deviation"
+                        value={dist.std || ""}
+                        onChange={(e) => handleEventChange(index, "probabilityDistribution.std", parseFloat(e.target.value))}
+                    />,
+                    <TextField
+                        {...commonProps}
+                        key="scalingFactor"
+                        label="Scaling Factor"
+                        value={dist.scalingFactor || ""}
+                        onChange={(e) => handleEventChange(index, "probabilityDistribution.scalingFactor", parseFloat(e.target.value))}
+                    />,
+                );
+                break;
             case "LOGNORMAL":
                 fields.push(
                     <TextField
@@ -449,6 +485,35 @@ const SimulationConfiguratorModalForm: React.FC = () => {
                 ))}
             </Grid>
         );
+    };
+
+    const generateMultiDistributionData = () => {
+        const PREVIEW_POINTS = 100;
+        const totalDuration = duration || 604800;
+
+        return events
+            .filter(e => e.probabilityDistribution?.type)
+            .map((event, idx) => {
+                const { type } = event.probabilityDistribution;
+                const params = event.probabilityDistribution;
+
+                const getProb = (t: number): number =>
+                    getProbFromParams(type, t, params);
+
+                const step = totalDuration / PREVIEW_POINTS;
+                const data = Array.from({ length: PREVIEW_POINTS + 1 }, (_, i) => {
+                    const t = i * step;
+                    return { x: t, y: Math.max(getProb(t), 1e-6) };
+                });
+
+                return {
+                    label: `${event.eventName || "Event " + (idx + 1)}`,
+                    data,
+                    borderWidth: 1,
+                    pointRadius: 0,
+                    fill: false,
+                };
+            })
     };
 
     return (
@@ -760,11 +825,14 @@ const SimulationConfiguratorModalForm: React.FC = () => {
                                                     ))}
                                                 </TextField>
 
+                                                {/*{alert(JSON.stringify(defaultParamsByDistribution[event.probabilityDistribution.type]))}*/}
                                                 <DistributionModal
                                                     open={openDistributions[index]}
-                                                    initialValue={event.probabilityDistribution}
+                                                    duration={duration}
+                                                    initialValue={defaultParamsByDistribution[event.probabilityDistribution.type]}
                                                     onClose={() => handleCloseModalDistribution(index)}
                                                     onConfirm={(res) => {
+                                                        console.log(res)
                                                         const updated = [...events];
                                                         updated[index].probabilityDistribution = res;
                                                         setEvents(updated);
@@ -781,7 +849,39 @@ const SimulationConfiguratorModalForm: React.FC = () => {
                         </Stack>
                     )}
                 </DialogContent>
-
+                <Button
+                    variant="outlined"
+                    size="small"
+                    onClick={() => setShowAllDistributions(prev => !prev)}
+                    sx={{ mt: 2 }}
+                >
+                    {showAllDistributions ? "Hide" : "Show"} All Distributions Preview
+                </Button>
+                <Collapse in={showAllDistributions} timeout="auto" unmountOnExit>
+                    <Typography variant="subtitle2" sx={{ mt: 2, mb: 1 }}>
+                        Preview of All Event Distributions
+                    </Typography>
+                    <Line
+                        data={{ datasets: generateMultiDistributionData() }}
+                        options={{
+                            responsive: true,
+                            scales: {
+                                x: {
+                                    type: "linear",
+                                    title: { display: true, text: "Time" },
+                                    min: 0,
+                                    max: duration || 604800,
+                                },
+                                y: {
+                                    type: "linear",
+                                    title: { display: true, text: "Probability" },
+                                    beginAtZero: true,
+                                    suggestedMax: 1,
+                                },
+                            },
+                        }}
+                    />
+                </Collapse>
                 <DialogActions>
                     <Button
                         startIcon={<Upload/>}
@@ -823,3 +923,5 @@ const SimulationConfiguratorModalForm: React.FC = () => {
 };
 
 export default SimulationConfiguratorModalForm;
+
+

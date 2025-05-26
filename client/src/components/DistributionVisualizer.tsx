@@ -4,10 +4,10 @@ import {
 } from '@mui/material';
 import { Line } from 'react-chartjs-2';
 import { Chart, LineElement, PointElement, CategoryScale, LinearScale } from 'chart.js';
+import {DistributionType} from "../types.ts";
 
 Chart.register(LineElement, PointElement, CategoryScale, LinearScale);
 
-type DistributionType = 'NORMAL' | 'NORMAL_SCALED' | 'EXPONENTIAL' | 'EXPONENTIAL_SCALED' | 'LOGNORMAL' | 'LOGNORMAL_SCALED';
 
 const DistributionVisualizer: React.FC = () => {
   const [distribution, setDistribution] = useState<DistributionType>('NORMAL');

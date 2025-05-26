@@ -1,3 +1,5 @@
+import {DistributionType} from "../../types.ts";
+
 export interface CsvFileDTO {
     id: number;
     name: string;
@@ -38,3 +40,4 @@ export interface GraphRequestDTO {
     }[];
     plots: PlotConfigDTO[];
 }
+
