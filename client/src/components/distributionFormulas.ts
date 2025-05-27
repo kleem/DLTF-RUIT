@@ -54,6 +54,37 @@ export const exponentialScaled = (time: number, rate: number, scalingFactorX: nu
     return scalingFactorY * rate * Math.exp(-1 * rate * realTime);
 };
 
+// export const bassModel = (time: number, p: number, q: number, scalingFactor: number = 1): number => {
+//     const realTime = time * scalingFactor;
+//
+//     const expTerm = Math.exp(-(p + q) * realTime);
+//     const numerator = (p + q) ** 2 * expTerm;
+//     const denominator = p + q * expTerm;
+//     return numerator / (denominator ** 2);
+// };
+export const bassModel = (
+    time: number,
+    p: number,
+    q: number,
+    scalingFactor: number = 1
+): number => {
+    const F = bassCumulative(time, p, q, scalingFactor);
+    return (p + q * F) * (1 - F);
+};
+
+
+export const bassCumulative = (
+    time: number,
+    p: number,
+    q: number,
+    scalingFactor: number = 1
+): number => {
+    const realTime = time * scalingFactor;
+    const exp = Math.exp(-(p + q) * realTime);
+    return (1 - exp) / (1 + (q / p) * exp);
+};
+
+
 export const getProbFromParams = (
     type: string,
     t: number,
@@ -89,6 +120,10 @@ export const getProbFromParams = (
         }
         case 'EXPONENTIAL_SCALED':
             return exponentialScaled(realTime, params.rate ?? 1, params.scalingFactorX ?? 1, params.scalingFactorY ?? 1);
+        case 'BASS':
+            return bassModel(t, params.p ?? 0.01, params.q ?? 0.3, params.scalingFactor ?? 1);
+        case 'BASS_CUMULATIVE':
+            return bassCumulative(t, params.p ?? 0.01, params.q ?? 0.3, params.scalingFactor ?? 1);
         default:
             return 0;
     }

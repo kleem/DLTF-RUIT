@@ -21,7 +21,7 @@ import {
 import {Add, Close, ContentCopy, Delete, Edit, Refresh, Save, Send, Upload, Visibility,} from "@mui/icons-material";
 import axios from "axios";
 import DistributionModal from "./DistributionModal.tsx";
-import {DistributionType, SimulationConfig, Event} from "../types.ts";
+import { SimulationConfig, Event, distributionTypes} from "../types.ts";
 import {defaultParamsByDistribution} from "./distributionConfigs.ts";
 import {
     getProbFromParams,
@@ -42,16 +42,6 @@ const aggregationOptions = [
     {value: 3600, label: "Hours"},
 ];
 
-const distributionTypes = [
-    {value: "FIXED", label: "Fixed"},
-    {value: "UNIFORM", label: "Uniform"},
-    {value: "NORMAL_SCALED", label: "Normal Scaled"},
-    {value: "NORMAL", label: "Normal"},
-    {value: "LOGNORMAL_SCALED", label: "LogNormal Scaled"},
-    {value: "LOGNORMAL", label: "LogNormal"},
-    {value: "EXPONENTIAL", label: "Exponential"},
-    {value: "EXPONENTIAL_SCALED", label: "Exponential Scaled"},
-];
 
 const downloadConfig = (config: SimulationConfig) => {
     const element = document.createElement("a");
@@ -440,6 +430,38 @@ const SimulationConfiguratorModalForm: React.FC = () => {
                         value={dist.scalingFactorY || ""}
                         onChange={(e) => handleEventChange(index, "probabilityDistribution.scalingFactorY", parseFloat(e.target.value))}
                     />,
+                );
+                break;
+            case "BASS":
+            case "BASS_CUMULATIVE":
+                fields.push(
+                    <TextField
+                        {...commonProps}
+                        key="p"
+                        label="Innovation Coefficient (p)"
+                        value={dist.p || ""}
+                        onChange={(e) =>
+                            handleEventChange(index, "probabilityDistribution.p", parseFloat(e.target.value))
+                        }
+                    />,
+                    <TextField
+                        {...commonProps}
+                        key="q"
+                        label="Imitation Coefficient (q)"
+                        value={dist.q || ""}
+                        onChange={(e) =>
+                            handleEventChange(index, "probabilityDistribution.q", parseFloat(e.target.value))
+                        }
+                    />,
+                    <TextField
+                        {...commonProps}
+                        key="scalingFactor"
+                        label="Scaling Factor"
+                        value={dist.scalingFactor || ""}
+                        onChange={(e) =>
+                            handleEventChange(index, "probabilityDistribution.scalingFactor", parseFloat(e.target.value))
+                        }
+                    />
                 );
                 break;
             default:

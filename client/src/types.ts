@@ -54,7 +54,43 @@ export interface ExponentialScaledDistributionParams extends  TimeDependingDistr
     scalingFactorY: number
 }
 
-export type DistributionType = 'FIXED' | 'UNIFORM' |  'NORMAL' | 'NORMAL_SCALED' | 'EXPONENTIAL' | 'EXPONENTIAL_SCALED' | 'LOGNORMAL' | 'LOGNORMAL_SCALED';
+// 1. Fonte di verità: array literal
+export const rawDistributionTypes = [
+    'FIXED',
+    'UNIFORM',
+    'NORMAL_SCALED',
+    'NORMAL',
+    'LOGNORMAL_SCALED',
+    'LOGNORMAL',
+    'EXPONENTIAL',
+    'EXPONENTIAL_SCALED',
+    'BASS',
+    'BASS_CUMULATIVE'
+] as const;
+
+// 2. Tipo derivato
+export type DistributionType = typeof rawDistributionTypes[number];
+
+// 3. Mappa per le label leggibili
+const labelMap: Record<DistributionType, string> = {
+    FIXED: 'Fixed',
+    UNIFORM: 'Uniform',
+    NORMAL: 'Normal',
+    NORMAL_SCALED: 'Normal Scaled',
+    LOGNORMAL: 'LogNormal',
+    LOGNORMAL_SCALED: 'LogNormal Scaled',
+    EXPONENTIAL: 'Exponential',
+    EXPONENTIAL_SCALED: 'Exponential Scaled',
+    BASS: 'Bass (Diffusion Model)',
+    BASS_CUMULATIVE: 'Bass (Cumulative Adoption)'
+};
+
+// 4. Array con { value, label }
+export const distributionTypes = rawDistributionTypes.map((type) => ({
+    value: type,
+    label: labelMap[type]
+}));
+
 
 export interface DistributionParams {
     type: DistributionType;
@@ -67,6 +103,8 @@ export interface DistributionParams {
     scalingFactor?: number;
     rate?: number;
     time?: number;
+    p?: number;
+    q?: number;
 }
 
 export type ProbabilityDistribution = {

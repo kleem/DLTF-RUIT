@@ -11,16 +11,16 @@ import {
     InputLabel,
     MenuItem,
     Select,
-    Slider, TextField,Grid,
+    Slider, TextField, Grid,
     Typography
 } from '@mui/material';
 import {Line} from 'react-chartjs-2';
 import {CategoryScale, Chart, LinearScale, LineElement, LogarithmicScale, PointElement} from 'chart.js';
-import {DistributionParams, DistributionType} from "../types.ts";
-import {getProbFromParams,
+import {DistributionParams, DistributionType, distributionTypes} from "../types.ts";
+import {
+    getProbFromParams,
 } from "./distributionFormulas.ts";
 import {defaultParamsByDistribution} from "./distributionConfigs.ts";
-
 
 
 interface Props {
@@ -32,7 +32,6 @@ interface Props {
 }
 
 Chart.register(LineElement, PointElement, CategoryScale, LinearScale, LogarithmicScale);
-
 
 
 const DistributionModal: React.FC<Props> = ({open, onClose, onConfirm, initialValue, duration}) => {
@@ -51,26 +50,28 @@ const DistributionModal: React.FC<Props> = ({open, onClose, onConfirm, initialVa
         ...initialValue
     });
     const [yRange, setYRange] = useState<number>(1);
-    const [yScaleType, setYScaleType] = useState<'linear' | 'logarithmic'>('linear');
     const [offsetStart, setOffsetStart] = useState<number>(0);
     const windowSize = 1000;
     useEffect(() => {
         if (initialValue?.type) {
             setDistribution(initialValue.type);
-            setParams({ ...initialValue });
+            setParams({...initialValue});
         }
     }, [initialValue]);
     const [sliderSettings, setSliderSettings] = useState({
-        mean: { label: 'Mean', min: 1, max: duration || 100, step: 1 },
-        std: { label: 'Std Dev', min: 0.1, max: 3000, step: 0.1 },
-        scalingFactorX: { label: 'Scaling FactorX', min: 0.1, max: 3000, step: 0.1 },
-        scalingFactorY: { label: 'Scaling FactorY', min: 0.001, max: 3000, step: 0.001 },
-        value: { label: 'Value', min: 0.00001, max: 1, step: 0.0001 },
+        mean: {label: 'Mean', min: 1, max: duration || 100, step: 1},
+        std: {label: 'Std Dev', min: 0.1, max: 3000, step: 0.1},
+        scalingFactorX: {label: 'Scaling FactorX', min: 0.1, max: 3000, step: 0.1},
+        scalingFactorY: {label: 'Scaling FactorY', min: 0.001, max: 3000, step: 0.001},
+        value: {label: 'Value', min: 0.00001, max: 1, step: 0.0001},
+        rate: {min: 0.0001, max: 2, step: 0.0001},
+        p: {min: 0.0001, max: 0.1, step: 0.0001},
+        q: {min: 0.01, max: 1, step: 0.01},
     });
 
     const handleDistributionChange = (type: DistributionType) => {
         setDistribution(type);
-        setParams({ ...defaultParamsByDistribution[type] });
+        setParams({...defaultParamsByDistribution[type]});
     };
 
 
@@ -84,13 +85,13 @@ const DistributionModal: React.FC<Props> = ({open, onClose, onConfirm, initialVa
 
 
         return (
-            <Box key={key} sx={{ my: 1, px: 2, py: 1, border: '1px solid #ddd', borderRadius: 1.5 }}>
+            <Box key={key} sx={{my: 1, px: 2, py: 1, border: '1px solid #ddd', borderRadius: 1.5}}>
                 <Grid container spacing={1} alignItems="center" wrap="nowrap">
-                    <Grid item sx={{ width: 150 }}>
-                        <Typography variant="body2" sx={{ whiteSpace: 'nowrap' }}>{label}</Typography>
+                    <Grid item sx={{width: 150}}>
+                        <Typography variant="body2" sx={{whiteSpace: 'nowrap'}}>{label}</Typography>
                     </Grid>
-                    <Grid item sx={{ width: 400 }}>
-                        <Typography variant="caption" sx={{ mb: 0.5, display: 'block' }}>{params[key]}</Typography>
+                    <Grid item sx={{width: 400}}>
+                        <Typography variant="caption" sx={{mb: 0.5, display: 'block'}}>{params[key]}</Typography>
                         <Slider
                             min={min}
                             max={max}
@@ -108,10 +109,10 @@ const DistributionModal: React.FC<Props> = ({open, onClose, onConfirm, initialVa
                             value={params[key]}
                             onChange={(e) => {
                                 const value = parseFloat(e.target.value);
-                                setParams(prev => ({ ...prev, [key]: isNaN(value) ? prev[key] : value }));
+                                setParams(prev => ({...prev, [key]: isNaN(value) ? prev[key] : value}));
                             }}
                             step={step}
-                            sx={{ width: 120 }}
+                            sx={{width: 120}}
                         />
                     </Grid>
                     <Grid item>
@@ -121,7 +122,7 @@ const DistributionModal: React.FC<Props> = ({open, onClose, onConfirm, initialVa
                             type="number"
                             value={min}
                             onChange={handleSliderSettingChange(key, 'min')}
-                            sx={{ width: 120 }}
+                            sx={{width: 120}}
                         />
                     </Grid>
                     <Grid item>
@@ -131,7 +132,7 @@ const DistributionModal: React.FC<Props> = ({open, onClose, onConfirm, initialVa
                             type="number"
                             value={max}
                             onChange={handleSliderSettingChange(key, 'max')}
-                            sx={{ width: 120 }}
+                            sx={{width: 120}}
                         />
                     </Grid>
                     <Grid item>
@@ -141,7 +142,7 @@ const DistributionModal: React.FC<Props> = ({open, onClose, onConfirm, initialVa
                             type="number"
                             value={step}
                             onChange={handleSliderSettingChange(key, 'step')}
-                            sx={{ width: 120 }}
+                            sx={{width: 120}}
                         />
                     </Grid>
                 </Grid>
@@ -181,7 +182,7 @@ const DistributionModal: React.FC<Props> = ({open, onClose, onConfirm, initialVa
         for (let i = 0; i <= POINTS; i++) {
             const t = offsetStart + i * step;
             const prob = getProb(t);
-            data.push({ x: t, y: Math.max(prob, 1e-6) }); // evita log(0)
+            data.push({x: t, y: Math.max(prob, 1e-6)}); // evita log(0)
         }
         return data;
     };
@@ -195,7 +196,7 @@ const DistributionModal: React.FC<Props> = ({open, onClose, onConfirm, initialVa
         for (let i = 0; i <= PREVIEW_POINTS; i++) {
             const t = i * step;
             const prob = getProb(t);
-            data.push({ x: t, y: Math.max(prob, 1e-6) });
+            data.push({x: t, y: Math.max(prob, 1e-6)});
         }
         return data;
     };
@@ -210,7 +211,7 @@ const DistributionModal: React.FC<Props> = ({open, onClose, onConfirm, initialVa
                 <Box sx={{mt: 2}}>
                     <Grid container spacing={1} alignItems="center" wrap="nowrap">
                         {/* Label sopra */}
-                        <Grid item sx={{ width: 150 }}>
+                        <Grid item sx={{width: 150}}>
                             <FormControl size="small" fullWidth>
                                 <InputLabel id="distribution-label">Distribution</InputLabel>
                                 <Select
@@ -219,18 +220,18 @@ const DistributionModal: React.FC<Props> = ({open, onClose, onConfirm, initialVa
                                     label="Distribution"
                                     onChange={e => handleDistributionChange(e.target.value as DistributionType)}
                                 >
-                                    {[
-                                        'FIXED', 'UNIFORM', 'NORMAL', 'NORMAL_SCALED',
-                                        'LOGNORMAL', 'LOGNORMAL_SCALED', 'EXPONENTIAL', 'EXPONENTIAL_SCALED'
-                                    ].map(d => (
-                                        <MenuItem key={d} value={d}>{d}</MenuItem>
+                                    {distributionTypes.map(d => (
+                                        <MenuItem key={d.value} value={d.value}>
+                                            {d.label}
+                                        </MenuItem>
                                     ))}
                                 </Select>
+
                             </FormControl>
                         </Grid>
 
                         {/* Offset Start */}
-                        <Grid item sx={{ width: 600 }}>
+                        <Grid item sx={{width: 600}}>
                             <Typography variant="body2" gutterBottom>
                                 Offset Start: <strong>{offsetStart}</strong>
                             </Typography>
@@ -270,7 +271,7 @@ const DistributionModal: React.FC<Props> = ({open, onClose, onConfirm, initialVa
                         )
                     }
 
-                    <Typography variant="subtitle2" sx={{ mt: 3 }}>Preview (entire distribution)</Typography>
+                    <Typography variant="subtitle2" sx={{mt: 3}}>Preview (entire distribution)</Typography>
                     <Line
                         data={{
                             datasets: [{
@@ -287,27 +288,28 @@ const DistributionModal: React.FC<Props> = ({open, onClose, onConfirm, initialVa
                             scales: {
                                 x: {
                                     type: 'linear',
-                                    title: { display: true, text: 'Full Time Range' },
+                                    title: {display: true, text: 'Full Time Range'},
                                     min: 0,
                                     max: duration || 604800,
                                 },
                                 y: {
-                                    type: yScaleType,
-                                    beginAtZero: yScaleType === 'linear',
+                                    type: "linear",
+                                    beginAtZero: 'linear',
                                     max: yRange,
-                                    title: { display: true, text: 'Probability' },
-                                    ticks: {
-                                        callback: (value) => yScaleType === 'logarithmic'
-                                            ? Number(value).toExponential(1)
-                                            : value,
-                                    }
+                                    title: {display: true, text: 'Probability'},
+                                    // ticks: {
+                                    //     callback: (value) => yScaleType === 'logarithmic'
+                                    //         ? Number(value).toExponential(1)
+                                    //         : value,
+                                    // }
                                 }
                             }
                         }}
                     />
 
                     {/*<Typography variant="body2" sx={{mb: 1}}>Max Y ≈ {maxY.toExponential(2)}</Typography>*/}
-                    <Typography variant="subtitle2" sx={{ mt: 3 }}>Preview partial distribution (1000 seconds window)</Typography>
+                    <Typography variant="subtitle2" sx={{mt: 3}}>Preview partial distribution (1000 seconds
+                        window)</Typography>
 
                     <Line
                         data={{
