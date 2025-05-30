@@ -2,7 +2,8 @@ import React, {useState} from "react";
 import {
     Box,
     Button,
-    Chip, Collapse,
+    Chip,
+    Collapse,
     Dialog,
     DialogActions,
     DialogContent,
@@ -21,11 +22,9 @@ import {
 import {Add, Close, ContentCopy, Delete, Edit, Refresh, Save, Send, Upload, Visibility,} from "@mui/icons-material";
 import axios from "axios";
 import DistributionModal from "./DistributionModal.tsx";
-import { SimulationConfig, Event, distributionTypes} from "../types.ts";
+import {distributionTypes, Event, SimulationConfig} from "../types.ts";
 import {defaultParamsByDistribution} from "./distributionConfigs.ts";
-import {
-    getProbFromParams,
-} from "./distributionFormulas.ts";
+import {getProbFromParams,} from "./distributionFormulas.ts";
 import {Line} from "react-chartjs-2";
 
 const durationOptions = [
@@ -61,13 +60,11 @@ const getProbabilityDistribution = (event: Event) => {
             return {
                 type,
                 fixedTime: dist.fixedTime,
-
             };
         case "UNIFORM":
             return {
                 type,
                 value: dist.value,
-
             };
         case "NORMAL_SCALED":
         case "LOGNORMAL_SCALED":
@@ -77,7 +74,6 @@ const getProbabilityDistribution = (event: Event) => {
                 std: dist.std,
                 scalingFactorX: dist.scalingFactorX,
                 scalingFactorY: dist.scalingFactorY,
-
             };
         case "NORMAL":
         case "LOGNORMAL":
@@ -86,7 +82,6 @@ const getProbabilityDistribution = (event: Event) => {
                 mean: dist.mean,
                 std: dist.std,
                 scalingFactor: dist.scalingFactor,
-
             };
         case "EXPONENTIAL_SCALED":
             return {
@@ -94,14 +89,31 @@ const getProbabilityDistribution = (event: Event) => {
                 rate: dist.rate,
                 scalingFactorX: dist.scalingFactorX,
                 scalingFactorY: dist.scalingFactorY,
-
             };
         case "EXPONENTIAL":
             return {
                 type,
                 rate: dist.rate,
                 scalingFactor: dist.scalingFactor,
-
+            };
+        case "BASS":
+        case "BASS_CUMULATIVE":
+            return {
+                type,
+                p: dist.p,
+                q: dist.q,
+                scalingFactor: dist.scalingFactor,
+            };
+        case "GARTNER_SASAKI":
+            return {
+                type,
+                A: dist.A,
+                B: dist.B,
+                C: dist.C,
+                D: dist.D,
+                E: dist.E,
+                F: dist.F,
+                scalingFactor: dist.scalingFactor,
             };
         default:
             return {};
@@ -237,7 +249,6 @@ const SimulationConfiguratorModalForm: React.FC = () => {
             })),
         };
 
-        console.log("Configuration ready:", config);
         try {
             const response = await axios.post('http://localhost:8099/newsimulation', config, {
                 headers: {
@@ -464,6 +475,73 @@ const SimulationConfiguratorModalForm: React.FC = () => {
                     />
                 );
                 break;
+            case "GARTNER_SASAKI":
+                fields.push(
+                    <TextField
+                        {...commonProps}
+                        key="A"
+                        label="Peak Height (A)"
+                        value={dist.A ?? ""}
+                        onChange={(e) =>
+                            handleEventChange(index, "probabilityDistribution.A", parseFloat(e.target.value))
+                        }
+                    />,
+                    <TextField
+                        {...commonProps}
+                        key="B"
+                        label="Gompertz Shape (B)"
+                        value={dist.B ?? ""}
+                        onChange={(e) =>
+                            handleEventChange(index, "probabilityDistribution.B", parseFloat(e.target.value))
+                        }
+                    />,
+                    <TextField
+                        {...commonProps}
+                        key="C"
+                        label="Gompertz Rate (C)"
+                        value={dist.C ?? ""}
+                        onChange={(e) =>
+                            handleEventChange(index, "probabilityDistribution.C", parseFloat(e.target.value))
+                        }
+                    />,
+                    <TextField
+                        {...commonProps}
+                        key="D"
+                        label="Disillusion Depth (D)"
+                        value={dist.D ?? ""}
+                        onChange={(e) =>
+                            handleEventChange(index, "probabilityDistribution.D", parseFloat(e.target.value))
+                        }
+                    />,
+                    <TextField
+                        {...commonProps}
+                        key="E"
+                        label="Recovery Slope (E)"
+                        value={dist.E ?? ""}
+                        onChange={(e) =>
+                            handleEventChange(index, "probabilityDistribution.E", parseFloat(e.target.value))
+                        }
+                    />,
+                    <TextField
+                        {...commonProps}
+                        key="F"
+                        label="Recovery Center Time (F)"
+                        value={dist.F ?? ""}
+                        onChange={(e) =>
+                            handleEventChange(index, "probabilityDistribution.F", parseFloat(e.target.value))
+                        }
+                    />,
+                    <TextField
+                        {...commonProps}
+                        key="scalingFactor"
+                        label="Scaling Factor"
+                        value={dist.scalingFactor ?? ""}
+                        onChange={(e) =>
+                            handleEventChange(index, "probabilityDistribution.scalingFactor", parseFloat(e.target.value))
+                        }
+                    />
+                );
+                break;
             default:
                 return null;
         }
@@ -486,16 +564,16 @@ const SimulationConfiguratorModalForm: React.FC = () => {
         return events
             .filter(e => e.probabilityDistribution?.type)
             .map((event, idx) => {
-                const { type } = event.probabilityDistribution;
+                const {type} = event.probabilityDistribution;
                 const params = event.probabilityDistribution;
 
                 const getProb = (t: number): number =>
                     getProbFromParams(type, t, params);
 
                 const step = totalDuration / PREVIEW_POINTS;
-                const data = Array.from({ length: PREVIEW_POINTS + 1 }, (_, i) => {
+                const data = Array.from({length: PREVIEW_POINTS + 1}, (_, i) => {
                     const t = i * step;
-                    return { x: t, y: Math.max(getProb(t), 1e-6) };
+                    return {x: t, y: Math.max(getProb(t), 1e-6)};
                 });
 
                 return {
@@ -845,28 +923,28 @@ const SimulationConfiguratorModalForm: React.FC = () => {
                     variant="outlined"
                     size="small"
                     onClick={() => setShowAllDistributions(prev => !prev)}
-                    sx={{ mt: 2 }}
+                    sx={{mt: 2}}
                 >
                     {showAllDistributions ? "Hide" : "Show"} All Distributions Preview
                 </Button>
                 <Collapse in={showAllDistributions} timeout="auto" unmountOnExit>
-                    <Typography variant="subtitle2" sx={{ mt: 2, mb: 1 }}>
+                    <Typography variant="subtitle2" sx={{mt: 2, mb: 1}}>
                         Preview of All Event Distributions
                     </Typography>
                     <Line
-                        data={{ datasets: generateMultiDistributionData() }}
+                        data={{datasets: generateMultiDistributionData()}}
                         options={{
                             responsive: true,
                             scales: {
                                 x: {
                                     type: "linear",
-                                    title: { display: true, text: "Time" },
+                                    title: {display: true, text: "Time"},
                                     min: 0,
                                     max: duration || 604800,
                                 },
                                 y: {
                                     type: "linear",
-                                    title: { display: true, text: "Probability" },
+                                    title: {display: true, text: "Probability"},
                                     beginAtZero: true,
                                     suggestedMax: 1,
                                 },

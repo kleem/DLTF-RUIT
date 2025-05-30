@@ -41,7 +41,7 @@ export const lognormalScaled = (time: number, mean: number, std: number, scaling
         return 0;
     const exp = -1 * (Math.log(realTime) - mean) * (Math.log(realTime) - mean) / (2 * std * std);
     const ratio = realTime * std * Math.sqrt(2 * Math.PI);
-    return scalingFactorY / ratio * Math.exp(exp);
+    return scalingFactorY* (1/ ratio * Math.exp(exp));
 };
 
 export const exponential = (time: number, rate: number, scalingFactor: number) => {
@@ -84,6 +84,42 @@ export const bassCumulative = (
     return (1 - exp) / (1 + (q / p) * exp);
 };
 
+export const gartnerCarrModel = (
+    t: number,
+    M: number,
+    K: number,
+    k: number,
+    t0: number,
+    delta: number,
+    scalingFactor: number = 1
+): number => {
+    const time = t * scalingFactor;
+    const logistic = (x: number) => 1 / (1 + Math.exp(-k * x));
+
+    const awareness = M * logistic(time - t0 - delta);
+    const expectation = M * logistic(time - t0);
+    const risk = K * logistic(time - t0 - delta);
+
+    return awareness - (expectation - risk);
+};
+
+export const sasakiHypeModel = (
+    t: number,
+    A: number = 1.2,
+    B: number = 5,
+    C: number = 0.005,
+    D: number = 0.8,
+    E: number = 0.01,
+    F: number = 400000,
+    scalingFactor: number = 1
+): number => {
+    const time = t * scalingFactor;
+
+    const gompertz = A * Math.exp(-B * Math.exp(-C * time));
+    const logistic = D / (1 + Math.exp(-E * (time - F)));
+
+    return Math.max(gompertz - logistic,0);
+};
 
 export const getProbFromParams = (
     type: string,
@@ -100,7 +136,7 @@ export const getProbFromParams = (
             // if (params.scalingFactor == null) {
             //     throw new Error("scalingFactor is required for NORMAL distribution");
             // }
-            return normal(t, params.mean ?? 0, params.std ?? 1, params.scalingFactor??1);
+            return normal(t, params.mean ?? 0, params.std ?? 1, params.scalingFactor ?? 1);
         }
         case 'NORMAL_SCALED':
             return normalScaled(t, params.mean ?? 0, params.std ?? 1, params.scalingFactorX ?? 1, params.scalingFactorY ?? 1);
@@ -108,7 +144,7 @@ export const getProbFromParams = (
             // if (params.scalingFactor == null) {
             //     throw new Error("scalingFactor is required for LOGNORMAL distribution");
             // }
-            return lognormal(t, params.mean ?? 0, params.std ?? 1, params.scalingFactor??1);
+            return lognormal(t, params.mean ?? 0, params.std ?? 1, params.scalingFactor ?? 1);
         }
         case 'LOGNORMAL_SCALED':
             return lognormalScaled(realTime, params.mean ?? 0, params.std ?? 1, params.scalingFactorX ?? 1, params.scalingFactorY ?? 1);
@@ -116,7 +152,7 @@ export const getProbFromParams = (
             // if (params.scalingFactor == null) {
             //     throw new Error("scalingFactor is required for EXPONENTIAL distribution");
             // }
-            return exponential(t, params.rate ?? 1, params.scalingFactor??1);
+            return exponential(t, params.rate ?? 1, params.scalingFactor ?? 1);
         }
         case 'EXPONENTIAL_SCALED':
             return exponentialScaled(realTime, params.rate ?? 1, params.scalingFactorX ?? 1, params.scalingFactorY ?? 1);
@@ -124,6 +160,29 @@ export const getProbFromParams = (
             return bassModel(t, params.p ?? 0.01, params.q ?? 0.3, params.scalingFactor ?? 1);
         case 'BASS_CUMULATIVE':
             return bassCumulative(t, params.p ?? 0.01, params.q ?? 0.3, params.scalingFactor ?? 1);
+        // case 'GARTNER':
+        //     return gartnerCarrModel(
+        //         t,
+        //         params.M ?? 1,
+        //         params.K ?? 0.5,
+        //         params.k ?? 0.01,
+        //         params.t0 ?? 302400,       // metà settimana
+        //         params.delta ?? 86400,     // 1 giorno di ritardo
+        //         params.scalingFactor ?? 1
+        //     );
+
+
+        case 'GARTNER_SASAKI':
+            return sasakiHypeModel(
+                t,
+                params.A ?? 1,
+                params.B ?? 0.5,
+                params.C ?? 0.01,
+                params.D ?? 302400,       // metà settimana
+                params.E ?? 86400,     // 1 giorno di ritardo
+                params.F ?? 86400,     // 1 giorno di ritardo
+                params.scalingFactor ?? 1
+            );
         default:
             return 0;
     }

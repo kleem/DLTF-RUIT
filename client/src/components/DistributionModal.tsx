@@ -21,6 +21,7 @@ import {
     getProbFromParams,
 } from "./distributionFormulas.ts";
 import {defaultParamsByDistribution} from "./distributionConfigs.ts";
+import {sliderSettingsByDistribution} from "./distributionDefaultSettings.ts";
 
 
 interface Props {
@@ -56,18 +57,10 @@ const DistributionModal: React.FC<Props> = ({open, onClose, onConfirm, initialVa
         if (initialValue?.type) {
             setDistribution(initialValue.type);
             setParams({...initialValue});
+            setSliderSettings(sliderSettingsByDistribution[initialValue.type] || {});
         }
     }, [initialValue]);
-    const [sliderSettings, setSliderSettings] = useState({
-        mean: {label: 'Mean', min: 1, max: duration || 100, step: 1},
-        std: {label: 'Std Dev', min: 0.1, max: 3000, step: 0.1},
-        scalingFactorX: {label: 'Scaling FactorX', min: 0.1, max: 3000, step: 0.1},
-        scalingFactorY: {label: 'Scaling FactorY', min: 0.001, max: 3000, step: 0.001},
-        value: {label: 'Value', min: 0.00001, max: 1, step: 0.0001},
-        rate: {min: 0.0001, max: 2, step: 0.0001},
-        p: {min: 0.0001, max: 0.1, step: 0.0001},
-        q: {min: 0.01, max: 1, step: 0.01},
-    });
+    const [sliderSettings, setSliderSettings] = useState(sliderSettingsByDistribution[distribution] || {});
 
     const handleDistributionChange = (type: DistributionType) => {
         setDistribution(type);
@@ -182,6 +175,7 @@ const DistributionModal: React.FC<Props> = ({open, onClose, onConfirm, initialVa
         for (let i = 0; i <= POINTS; i++) {
             const t = offsetStart + i * step;
             const prob = getProb(t);
+            console.log(prob,t);
             data.push({x: t, y: Math.max(prob, 1e-6)}); // evita log(0)
         }
         return data;

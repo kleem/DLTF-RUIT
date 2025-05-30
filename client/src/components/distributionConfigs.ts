@@ -1,36 +1,36 @@
 import {DistributionParams, DistributionType} from "../types.ts";
 
 export const defaultParamsByDistribution: Record<DistributionType, DistributionParams> = {
-    FIXED: { type: 'FIXED', fixedTime: 100 },
-    UNIFORM: { type: 'UNIFORM', value: 0.0001 },
+    FIXED: {type: 'FIXED', fixedTime: 100},
+    UNIFORM: {type: 'UNIFORM', value: 0.0001},
     NORMAL: {
         type: "NORMAL",
-        mean: 2000,            // centro della curva
-        std: 2475,              // larghezza ampia
-        scalingFactor: 1         // nessuna riscalatura
+        mean: 5,            // centro della curva
+        std: 1,              // larghezza ampia
+        scalingFactor: 0.1         // nessuna riscalatura
     },
     NORMAL_SCALED: {
         type: "NORMAL_SCALED",
         mean: 2000,
-        std: 2475,
-        scalingFactorX: 0.1,
-        scalingFactorY: 1657
+        std: 570,
+        scalingFactorX: 0.01,
+        scalingFactorY: 307
     },
     LOGNORMAL: {
         type: "LOGNORMAL",
-        mean: 6.2,               // stesso log-picco
-        std: 0.04,
-        scalingFactor: 0.000815  // picco verso metà settimana (≈ e^6.2 ≈ 493)
+        mean: 0.6,               // stesso log-picco
+        std: 1.2,
+        scalingFactor: 0.00001
     },
     LOGNORMAL_SCALED: {
         type: "LOGNORMAL_SCALED",
-        mean: 6.2,              // leggermente spostato
-        std: 0.4,
+        mean: 0.6,              // leggermente spostato
+        std: 1.9,
         scalingFactorX: 0.001,
-        scalingFactorY: 100
+        scalingFactorY: 1
     },
-    EXPONENTIAL: { type: 'EXPONENTIAL', rate: 0.1, scalingFactor: 0.0001 },
-    EXPONENTIAL_SCALED: { type: 'EXPONENTIAL_SCALED', rate: 1, scalingFactorX: 0.001, scalingFactorY: 0.4 },
+    EXPONENTIAL: {type: 'EXPONENTIAL', rate: 0.1, scalingFactor: 0.0001},
+    EXPONENTIAL_SCALED: {type: 'EXPONENTIAL_SCALED', rate: 1, scalingFactorX: 0.001, scalingFactorY: 0.4},
     BASS: {
         type: 'BASS',
         // p: 0.01, // p = 0.01 → percentuale di innovatori (adozione spontanea iniziale)
@@ -38,8 +38,8 @@ export const defaultParamsByDistribution: Record<DistributionType, DistributionP
         // scalingFactor: 0.001  // scalingFactor = 0.001 → scala temporale ridotta (es. 604800s × 0.001 = 604.8 "unità tempo")
 
         // curva più lenta, picco più lontano
-        p: 0.001, // p = 0.01 → percentuale di innovatori (adozione spontanea iniziale)
-        q: 0.05,  // q = 0.3 → percentuale di imitatori (adozione influenzata dagli altri)
+        p: 0.01, // p = 0.01 → percentuale di innovatori (adozione spontanea iniziale)
+        q: 0.15,  // q = 0.3 → percentuale di imitatori (adozione influenzata dagli altri)
         scalingFactor: 0.0001  // scalingFactor = 0.001 → scala temporale ridotta (es. 604800s × 0.001 = 604.8 "unità tempo")
 
     },
@@ -52,8 +52,17 @@ export const defaultParamsByDistribution: Record<DistributionType, DistributionP
         // scalingFactor: 0.001 // tempo effettivo in secondi (es. 604800s × 0.001 = 604.8 "unità tempo")
 
         p: 0.001,  //più distesa
-        q: 0.05,
+        q: 0.3,
         scalingFactor: 0.0001 // tempo effettivo in secondi (es. 604800s × 0.001 = 604.8 "unità tempo")
+    },
+    GARTNER_SASAKI: {
+        type: 'GARTNER_SASAKI',  // Sasaki-Hype Model
+        A: 0.05,
+        B: 35,
+        C: 0.0001,
+        D: 0.03,
+        E: 0.0001,
+        F: 440000,
+        scalingFactor: 1
     }
-
 };

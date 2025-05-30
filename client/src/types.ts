@@ -65,7 +65,9 @@ export const rawDistributionTypes = [
     'EXPONENTIAL',
     'EXPONENTIAL_SCALED',
     'BASS',
-    'BASS_CUMULATIVE'
+    'BASS_CUMULATIVE',
+    // 'GARTNER',
+    'GARTNER_SASAKI'
 ] as const;
 
 // 2. Tipo derivato
@@ -82,7 +84,9 @@ const labelMap: Record<DistributionType, string> = {
     EXPONENTIAL: 'Exponential',
     EXPONENTIAL_SCALED: 'Exponential Scaled',
     BASS: 'Bass (Diffusion Model)',
-    BASS_CUMULATIVE: 'Bass (Cumulative Adoption)'
+    BASS_CUMULATIVE: 'Bass (Cumulative Adoption)',
+    // GARTNER: 'Gartner-Carr Model',
+    GARTNER_SASAKI: 'Sasaki-Hype Model'
 };
 
 // 4. Array con { value, label }
@@ -103,6 +107,12 @@ export interface DistributionParams {
     scalingFactor?: number;
     rate?: number;
     time?: number;
+    A?: number;
+    B?: number;
+    C?: number;
+    D?: number;
+    E?: number;
+    F?: number;
     p?: number;
     q?: number;
 }
