@@ -1,5 +1,6 @@
 package com.bcsimulator.controller;
 
+import com.bcsimulator.dto.AbstractDistributionDTO;
 import com.bcsimulator.dto.EventDTO;
 import com.bcsimulator.dto.JobStatusDTO;
 import com.bcsimulator.dto.SimulationRequestDTO;
@@ -67,7 +68,19 @@ public class SimulationController {
 
     @PostMapping("/newsimulation")
     public ResponseEntity<?> runNewSimulation(@RequestBody SimulationRequestDTO request) throws JobInstanceAlreadyCompleteException, JobExecutionAlreadyRunningException, JobParametersInvalidException, JobRestartException {
+        System.out.println("[DEBUG] Received SimulationRequest:");
+        System.out.println("  name: " + request.getName());
+        System.out.println("  numRuns: " + request.getNumRuns());
+        System.out.println("  maxTime: " + request.getMaxTime());
+        System.out.println("  events:");
 
+        for (EventDTO event : request.getEvents()) {
+            System.out.printf("    Event: %s%n", event.getEventName());
+            AbstractDistributionDTO dist = event.getProbabilityDistribution();
+            System.out.println("    Distribution:");
+            System.out.println("      Type: " + dist.getType());
+            System.out.println("      Full: " + dist);
+        }
         try {
             System.out.println("Events: " + request.getEvents()); // <-- per debug
             Map<String, Object> response = simulationJobService.runSimulation(request);
