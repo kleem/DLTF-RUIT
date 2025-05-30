@@ -39,10 +39,6 @@ public class NormalProbDistrDTO extends AbstractDistributionDTO {
     double std;
     double scalingFactor;
     
-    public NormalProbDistrDTO(double _mean, double _std, double _scaling){
-        mean = _mean; std = _std; scalingFactor = _scaling;
-    }
-    
     @Override
     public double getProb(int time){        
         double realTime = time*scalingFactor;

@@ -21,6 +21,9 @@ import lombok.NoArgsConstructor;
         @JsonSubTypes.Type(value = ExponentialProbDistrDTO.class, name = "EXPONENTIAL"),
         @JsonSubTypes.Type(value = ExponentialProbDistrScaledDTO.class, name = "EXPONENTIAL_SCALED"),
         @JsonSubTypes.Type(value = FixedProbDistrDTO.class, name = "FIXED"),
+        @JsonSubTypes.Type(value = BassProbDistrDTO.class, name = "BASS"),
+        @JsonSubTypes.Type(value = BassCumulativeProbDistrDTO.class, name = "BASS_CUMULATIVE"),
+        @JsonSubTypes.Type(value = GartnerSasakiProbDistrDTO.class, name = "GARTNER_SASAKI")
 })
 @Data
 @NoArgsConstructor

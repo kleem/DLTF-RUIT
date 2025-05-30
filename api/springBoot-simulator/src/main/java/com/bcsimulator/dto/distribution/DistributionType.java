@@ -8,7 +8,10 @@ public enum DistributionType {
     EXPONENTIAL_SCALED("ExponentialProbDistrScaled"),
     LOGNORMAL("LognormalProbDistr"),
     LOGNORMAL_SCALED("LognormalProbDistrScaled"),
-    UNIFORM("UniformProbDistr");
+    UNIFORM("UniformProbDistr"),
+    BASS("BassProbDistr"),
+    BASS_CUMULATIVE("BassCumulativeProbDistr"),
+    GARTNER_SASAKI("GartnerSasakiProbDistr");
 
     private final String type;
 
