@@ -113,6 +113,9 @@ const getProbabilityDistribution = (event: Event) => {
                 D: dist.D,
                 E: dist.E,
                 F: dist.F,
+                G: dist.G,
+                H: dist.H,
+                I: dist.I,
                 scalingFactor: dist.scalingFactor,
             };
         default:
@@ -529,6 +532,33 @@ const SimulationConfiguratorModalForm: React.FC = () => {
                         value={dist.F ?? ""}
                         onChange={(e) =>
                             handleEventChange(index, "probabilityDistribution.F", parseFloat(e.target.value))
+                        }
+                    />,
+                    <TextField
+                        {...commonProps}
+                        key="G"
+                        label="... (G)"
+                        value={dist.G ?? ""}
+                        onChange={(e) =>
+                            handleEventChange(index, "probabilityDistribution.G", parseFloat(e.target.value))
+                        }
+                    />,
+                    <TextField
+                        {...commonProps}
+                        key="H"
+                        label="... (H)"
+                        value={dist.H ?? ""}
+                        onChange={(e) =>
+                            handleEventChange(index, "probabilityDistribution.H", parseFloat(e.target.value))
+                        }
+                    />,
+                    <TextField
+                        {...commonProps}
+                        key="I"
+                        label="... (I)"
+                        value={dist.I ?? ""}
+                        onChange={(e) =>
+                            handleEventChange(index, "probabilityDistribution.I", parseFloat(e.target.value))
                         }
                     />,
                     <TextField

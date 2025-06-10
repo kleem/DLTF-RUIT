@@ -8,18 +8,18 @@ import {
     DialogTitle,
     Divider,
     FormControl,
+    Grid,
     InputLabel,
     MenuItem,
     Select,
-    Slider, TextField, Grid,
+    Slider,
+    TextField,
     Typography
 } from '@mui/material';
 import {Line} from 'react-chartjs-2';
 import {CategoryScale, Chart, LinearScale, LineElement, LogarithmicScale, PointElement} from 'chart.js';
 import {DistributionParams, DistributionType, distributionTypes} from "../types.ts";
-import {
-    getProbFromParams,
-} from "./distributionFormulas.ts";
+import {getProbFromParams,} from "./distributionFormulas.ts";
 import {defaultParamsByDistribution} from "./distributionConfigs.ts";
 import {sliderSettingsByDistribution} from "./distributionDefaultSettings.ts";
 
@@ -72,19 +72,42 @@ const DistributionModal: React.FC<Props> = ({open, onClose, onConfirm, initialVa
         if (typeof params[key] !== 'number') return null;
 
         const label = key.charAt(0).toUpperCase() + key.slice(1);
+        const labelDescr = sliderSettings[key]?.label ?? '';
+
         const min = sliderSettings[key]?.min ?? 0;
         const max = sliderSettings[key]?.max ?? 1000;
         const step = sliderSettings[key]?.step ?? 1;
-
+        console.log(params[key], min, max, step);
 
         return (
-            <Box key={key} sx={{my: 1, px: 2, py: 1, border: '1px solid #ddd', borderRadius: 1.5}}>
+            <Box
+                key={key}
+                sx={{
+                    my: 1,
+                    px: 1.5,
+                    py: 1,
+                    border: '1px solid #ddd',
+                    borderRadius: 1.5,
+                }}
+            >
                 <Grid container spacing={1} alignItems="center" wrap="nowrap">
-                    <Grid item sx={{width: 150}}>
-                        <Typography variant="body2" sx={{whiteSpace: 'nowrap'}}>{label}</Typography>
+                    <Grid item sx={{width: 160}}>
+                        <Typography
+                            variant="body2"
+                            sx={{
+                                whiteSpace: 'normal',
+                                wordWrap: 'break-word',
+                                lineHeight: 1.2,
+                            }}
+                        >
+                            {labelDescr }
+                        </Typography>
                     </Grid>
-                    <Grid item sx={{width: 400}}>
-                        <Typography variant="caption" sx={{mb: 0.5, display: 'block'}}>{params[key]}</Typography>
+
+                    <Grid item sx={{width: 320}}>
+                        <Typography variant="caption" sx={{mb: 0.5, display: 'block'}}>
+                            {params[key]}
+                        </Typography>
                         <Slider
                             min={min}
                             max={max}
@@ -94,6 +117,7 @@ const DistributionModal: React.FC<Props> = ({open, onClose, onConfirm, initialVa
                             size="small"
                         />
                     </Grid>
+
                     <Grid item>
                         <TextField
                             size="small"
@@ -102,12 +126,16 @@ const DistributionModal: React.FC<Props> = ({open, onClose, onConfirm, initialVa
                             value={params[key]}
                             onChange={(e) => {
                                 const value = parseFloat(e.target.value);
-                                setParams(prev => ({...prev, [key]: isNaN(value) ? prev[key] : value}));
+                                setParams((prev) => ({
+                                    ...prev,
+                                    [key]: isNaN(value) ? prev[key] : value,
+                                }));
                             }}
                             step={step}
-                            sx={{width: 120}}
+                            sx={{width: 100}}
                         />
                     </Grid>
+
                     <Grid item>
                         <TextField
                             size="small"
@@ -115,9 +143,10 @@ const DistributionModal: React.FC<Props> = ({open, onClose, onConfirm, initialVa
                             type="number"
                             value={min}
                             onChange={handleSliderSettingChange(key, 'min')}
-                            sx={{width: 120}}
+                            sx={{width: 90}}
                         />
                     </Grid>
+
                     <Grid item>
                         <TextField
                             size="small"
@@ -125,9 +154,10 @@ const DistributionModal: React.FC<Props> = ({open, onClose, onConfirm, initialVa
                             type="number"
                             value={max}
                             onChange={handleSliderSettingChange(key, 'max')}
-                            sx={{width: 120}}
+                            sx={{width: 90}}
                         />
                     </Grid>
+
                     <Grid item>
                         <TextField
                             size="small"
@@ -135,7 +165,7 @@ const DistributionModal: React.FC<Props> = ({open, onClose, onConfirm, initialVa
                             type="number"
                             value={step}
                             onChange={handleSliderSettingChange(key, 'step')}
-                            sx={{width: 120}}
+                            sx={{width: 90}}
                         />
                     </Grid>
                 </Grid>
@@ -175,7 +205,7 @@ const DistributionModal: React.FC<Props> = ({open, onClose, onConfirm, initialVa
         for (let i = 0; i <= POINTS; i++) {
             const t = offsetStart + i * step;
             const prob = getProb(t);
-            console.log(prob,t);
+            console.log(prob, t);
             data.push({x: t, y: Math.max(prob, 1e-6)}); // evita log(0)
         }
         return data;

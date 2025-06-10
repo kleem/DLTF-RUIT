@@ -121,6 +121,21 @@ export const sasakiHypeModel = (
     return Math.max(gompertz - logistic,0);
 };
 
+const hypeWithRecovery = (
+    t: number,
+    A = 1.2, B = 5, C = 0.005, // gompertz
+    D = 0.8, E = 0.01, F = 400000, // logistic (rischio)
+    G = 0.5, H = 0.01, I = 450000, // recovery logistic
+    scalingFactor = 1
+): number => {
+    const time = t * scalingFactor;
+
+    const gompertz = A * Math.exp(-B * Math.exp(-C * time));
+    const logisticDrop = D / (1 + Math.exp(-E * (time - F)));
+    const recovery = G / (1 + Math.exp(-H * (time - I)));
+    return Math.max(gompertz - logisticDrop + recovery, 0);
+};
+
 export const getProbFromParams = (
     type: string,
     t: number,
@@ -173,14 +188,17 @@ export const getProbFromParams = (
 
 
         case 'GARTNER_SASAKI':
-            return sasakiHypeModel(
+            return hypeWithRecovery(
                 t,
-                params.A ?? 1,
-                params.B ?? 0.5,
-                params.C ?? 0.01,
-                params.D ?? 302400,       // metà settimana
-                params.E ?? 86400,     // 1 giorno di ritardo
-                params.F ?? 86400,     // 1 giorno di ritardo
+                params.A ?? 0.8,
+                params.B ?? 4,
+                params.C ?? 0.0001,
+                params.D ?? 0.9,       // metà settimana
+                params.E ?? 0.0001,     // 1 giorno di ritardo
+                params.F ?? 167000,     // 1 giorno di ritardo
+                params.G ?? 0.56,
+                params.H?? 0.0001,
+                params.I?? 242000,
                 params.scalingFactor ?? 1
             );
         default:

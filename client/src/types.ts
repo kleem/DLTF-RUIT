@@ -113,6 +113,9 @@ export interface DistributionParams {
     D?: number;
     E?: number;
     F?: number;
+    G?: number,
+    H?: number;
+    I?: number;
     p?: number;
     q?: number;
 }

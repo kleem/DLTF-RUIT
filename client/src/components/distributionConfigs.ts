@@ -57,12 +57,15 @@ export const defaultParamsByDistribution: Record<DistributionType, DistributionP
     },
     GARTNER_SASAKI: {
         type: 'GARTNER_SASAKI',  // Sasaki-Hype Model
-        A: 0.05,
-        B: 35,
+        A: 0.8,
+        B: 4,
         C: 0.0001,
-        D: 0.03,
-        E: 0.0001,
-        F: 440000,
+        D: 0.9,
+        E: 0.00001,
+        F: 167000,
+        G: 0.22,
+        H: 0.0001,
+        I: 242000,
         scalingFactor: 1
     }
 };
