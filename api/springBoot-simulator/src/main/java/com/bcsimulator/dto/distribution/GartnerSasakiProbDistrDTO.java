@@ -25,15 +25,23 @@ public class GartnerSasakiProbDistrDTO extends AbstractDistributionDTO {
     private double E;
     @JsonProperty("F")
     private double F;
+    @JsonProperty("G")
+    private double G;
+    @JsonProperty("H")
+    private double H;
+    @JsonProperty("I")
+    private double I;
     @JsonProperty("scalingFactor")
     private double scalingFactor;
 
 
     @Override
     public double getProb(int time) {
+
         double t = time * scalingFactor;
-        double peak = A * Math.exp(-B * Math.exp(-C * t));
-        double trough = D / (1 + Math.exp(-E * (t - F)));
-        return Math.max(peak - trough, 0);
+        double gompertz = A * Math.exp(-B * Math.exp(-C * t));
+        double logisticDrop = D / (1 + Math.exp(-E * (t - F)));
+        double recovery = G / (1 + Math.exp(-H * (t - I)));
+        return Math.max(gompertz - logisticDrop + recovery, 0);
     }
 }
