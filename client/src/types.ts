@@ -71,10 +71,10 @@ export const rawDistributionTypes = [
 ] as const;
 
 // 2. Tipo derivato
-export type DistributionType = typeof rawDistributionTypes[number];
+export type DistributionType = typeof rawDistributionTypes[number] | "";
 
 // 3. Mappa per le label leggibili
-const labelMap: Record<DistributionType, string> = {
+const labelMap: Partial<Record<DistributionType, string>> = {
     FIXED: 'Fixed',
     UNIFORM: 'Uniform',
     NORMAL: 'Normal',
@@ -131,16 +131,20 @@ export type SimulationConfig = {
     name: string;
     numAggr: number;
     maxTime: number;
-    numRuns: number;
+    numRuns: number | string;
+};
+
+export type EventDependency = {
+    dependOn: string | null;
+    maxProbabilityMatches: string | null;
+    probabilityDistribution: ProbabilityDistribution;
 };
 
 export type Event = {
     eventName: string;
-    eventDescription: string;
+    description: string;
     instanceOf: string | null;
-    dependOn: string | null;
-    probabilityDistribution: ProbabilityDistribution;
+    dependencies: EventDependency[] | null;
     gasCost: number;
-    maxProbabilityMatches: number | null;
     relatedEvents: string[] | null;
 };
