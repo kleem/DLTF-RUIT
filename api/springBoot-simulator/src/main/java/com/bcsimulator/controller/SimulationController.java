@@ -76,10 +76,22 @@ public class SimulationController {
 
         for (EventDTO event : request.getEvents()) {
             System.out.printf("    Event: %s%n", event.getEventName());
-            AbstractDistributionDTO dist = event.getProbabilityDistribution();
-            System.out.println("    Distribution:");
-            System.out.println("      Type: " + dist.getType());
-            System.out.println("      Full: " + dist);
+            System.out.println("    Description: " + event.getDescription());
+            System.out.println("    InstanceOf: " + event.getInstanceOf());
+            if (event.getDependencies() != null && !event.getDependencies().isEmpty()) {
+                System.out.println("    Dependencies:");
+                event.getDependencies().forEach(dep -> {
+                    System.out.println("      DependOn: " + dep.getDependOn());
+                    System.out.println("      MaxProbabilityMatches: " + dep.getMaxProbabilityMatches());
+                    AbstractDistributionDTO dist = dep.getProbabilityDistribution();
+                    System.out.println("      Distribution:");
+                    System.out.println("        Type: " + dist.getType());
+                    System.out.println("        Full: " + dist);
+                });
+            } else {
+                System.out.println("    No dependencies");
+            }
+            System.out.println("    GasCost: " + event.getGasCost());
         }
         try {
             System.out.println("Events: " + request.getEvents()); // <-- per debug
