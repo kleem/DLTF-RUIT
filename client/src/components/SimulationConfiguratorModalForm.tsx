@@ -18,7 +18,7 @@ import {
     Tooltip,
     Typography,
 } from "@mui/material";
-import {Add, Close, ContentCopy, Delete, Edit, Refresh, Save, Send, Upload, Visibility, Settings, Group, EventNote} from "@mui/icons-material";
+import {Add, Close, ContentCopy, Delete, Edit, Refresh, Save, Send, Upload, Visibility, Settings, Group, EventNote, Preview} from "@mui/icons-material";
 import axios from "axios";
 import DistributionModal from "./DistributionModal.tsx";
 import {distributionTypes, Event, EventDependency, ProbabilityDistribution, SimulationConfig} from "../types.ts";
@@ -35,6 +35,7 @@ import {
     Tooltip as ChartTooltip,
     Legend
 } from 'chart.js';
+import DistributionPreviewModal from "./DistributionPreviewModal";
 
 ChartJS.register(
     CategoryScale,
@@ -160,6 +161,7 @@ const SimulationConfiguratorModalForm: React.FC = () => {
     const [configPreview, setConfigPreview] = useState<SimulationConfig | null>(null);
     const [numRuns, setNumRuns] = useState<number | string>("5");
     const [expandedEvent, setExpandedEvent] = useState<number | null>(null);
+    const [previewModalOpen, setPreviewModalOpen] = useState(false);
 
     // Palette di colori predefinita per i grafici
     const chartColors = [
@@ -432,6 +434,29 @@ const SimulationConfiguratorModalForm: React.FC = () => {
                 }) || [];
             })
             .flat();
+    };
+
+    // Funzione per raccogliere tutti i dati delle distribuzioni
+    const getAllDistributions = () => {
+        const distributions: { label: string; data: { x: number; y: number; }[]; borderColor: string; }[] = [];
+        
+        events.forEach((event, eventIndex) => {
+            event.dependencies?.forEach((dep, depIndex) => {
+                const data = Array.from({ length: 100 }, (_, i) => {
+                    const t = i * (duration / 100);
+                    const prob = Math.max(0, getProbFromParams(dep.probabilityDistribution.type, t, dep.probabilityDistribution));
+                    return { x: t, y: prob };
+                });
+
+                distributions.push({
+                    label: `${event.eventName} - Dependency ${depIndex + 1}`,
+                    data,
+                    borderColor: getChartColor(eventIndex * 10 + depIndex)
+                });
+            });
+        });
+
+        return distributions;
     };
 
     return (
@@ -1019,6 +1044,15 @@ const SimulationConfiguratorModalForm: React.FC = () => {
                         </Button>
                     )}
                     <Button
+                        onClick={() => setPreviewModalOpen(true)}
+                        color="secondary"
+                        startIcon={<Preview/>}
+                        disabled={!events.some(e => e.dependencies && e.dependencies.length >= 1) || getAllDistributions().length < 2}
+                        sx={{ mr: 1 }}
+                    >
+                        Compare Distributions
+                    </Button>
+                    <Button
                         onClick={handleSubmit}
                         color="primary"
                         variant="contained"
@@ -1029,6 +1063,13 @@ const SimulationConfiguratorModalForm: React.FC = () => {
                     </Button>
                 </DialogActions>
             </Dialog>
+
+            <DistributionPreviewModal
+                open={previewModalOpen}
+                onClose={() => setPreviewModalOpen(false)}
+                distributions={getAllDistributions()}
+                duration={duration}
+            />
         </>
     );
 };
