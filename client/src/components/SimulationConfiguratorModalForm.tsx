@@ -161,6 +161,30 @@ const SimulationConfiguratorModalForm: React.FC = () => {
     const [numRuns, setNumRuns] = useState<number | string>("5");
     const [expandedEvent, setExpandedEvent] = useState<number | null>(null);
 
+    // Palette di colori predefinita per i grafici
+    const chartColors = [
+        '#2196F3', // Blue
+        '#F44336', // Red
+        '#4CAF50', // Green
+        '#FF9800', // Orange
+        '#9C27B0', // Purple
+        '#00BCD4', // Cyan
+        '#FFC107', // Amber
+        '#795548', // Brown
+        '#607D8B', // Blue Grey
+        '#E91E63', // Pink
+        '#673AB7', // Deep Purple
+        '#3F51B5', // Indigo
+        '#009688', // Teal
+        '#FF5722', // Deep Orange
+        '#8BC34A'  // Light Green
+    ];
+
+    // Funzione per ottenere un colore dalla palette
+    const getChartColor = (index: number) => {
+        return chartColors[index % chartColors.length];
+    };
+
     const handleReset = () => {
         if (window.confirm("Are you sure you want to reset all fields?")) {
             setName("");
@@ -408,17 +432,6 @@ const SimulationConfiguratorModalForm: React.FC = () => {
                 }) || [];
             })
             .flat();
-    };
-
-    // Funzione per generare un colore consistente da una stringa
-    const getColorFromString = (str: string) => {
-        let hash = 0;
-        for (let i = 0; i < str.length; i++) {
-            hash = str.charCodeAt(i) + ((hash << 5) - hash);
-        }
-        // Usa HSL per avere colori sempre vivaci
-        const hue = Math.abs(hash % 360);  // Valore tra 0 e 359
-        return `hsl(${hue}, 70%, 50%)`;    // Saturazione e luminosità fisse per colori vivaci
     };
 
     return (
@@ -833,7 +846,7 @@ const SimulationConfiguratorModalForm: React.FC = () => {
                                                                                                     borderWidth: 3,
                                                                                                     pointRadius: 0,
                                                                                                     fill: false,
-                                                                                                    borderColor: getColorFromString(`${event.eventName}-${depIndex}`),
+                                                                                                    borderColor: getChartColor(index * 10 + depIndex),
                                                                                                 }]
                                                                                             }}
                         options={{
