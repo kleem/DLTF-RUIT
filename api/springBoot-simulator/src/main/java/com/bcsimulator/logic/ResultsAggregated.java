@@ -126,19 +126,8 @@ public class ResultsAggregated {
 
     private void processEventWithoutDependencies(String eventName, double randomDouble, int timeInner, int run, 
                                                String instanceOf, String eventKey, long gasCost) {
-        // Since there's no dependency, we'll use a uniform distribution with a very small probability
-        double baseProb = 0.0001; // Default small probability for events without dependencies
-        
-        boolean isBelowMax = true; // No max limit for events without dependencies
-        
-        if (randomDouble <= baseProb) {
-            if (instanceOf != null) {
-                this.entities.get(toCamelCase(instanceOf))[run].add(timeInner);
-                this.aggregatedEntities.get(toCamelCase(instanceOf))[run].add(timeInner);
-            }
-            addGas(run, eventName, gasCost);
-            counters.get(eventKey)[run]++;
-        }
+        // Events without dependencies should not occur at all
+        return;
     }
 
     private void processEventWithDependency(String eventName, EventDependencyDTO dependency, double randomDouble, 
