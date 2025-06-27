@@ -174,26 +174,26 @@ public class ResultsAggregated {
         // Handle entity-referenced maxProbabilityMatches (e.g. "#user")
         Integer maxProbabilityMatches = parseMaxProbabilityMatches(maxProbabilityMatchesStr, run);
 
-        LinkedList<Integer>[] entityList = this.entities.get(toCamelCase(dependOn));
-        if (entityList != null) {
-            for (Integer entityTime : entityList[run]) {
-                double probTimeDep = dist.getProb(timeInner - entityTime);
-                if (randomDouble <= probTimeDep) {
-                    boolean isBelowLimit = maxProbabilityMatches == null || maxProbabilityMatches <= 0 ||
-                            isBelowPerEntityLimit(eventKey, run, entityTime, maxProbabilityMatches);
+            LinkedList<Integer>[] entityList = this.entities.get(toCamelCase(dependOn));
+            if (entityList != null) {
+                for (Integer entityTime : entityList[run]) {
+                    double probTimeDep = dist.getProb(timeInner - entityTime);
+                    if (randomDouble <= probTimeDep) {
+                        boolean isBelowLimit = maxProbabilityMatches == null || maxProbabilityMatches <= 0 ||
+                                isBelowPerEntityLimit(eventKey, run, entityTime, maxProbabilityMatches);
 
-                    if (!isBelowLimit) continue;
+                        if (!isBelowLimit) continue;
 
-                    if (instanceOf != null) {
-                        this.entities.get(toCamelCase(instanceOf))[run].add(timeInner);
-                        this.aggregatedEntities.get(toCamelCase(instanceOf))[run].add(timeInner);
+                        if (instanceOf != null) {
+                            this.entities.get(toCamelCase(instanceOf))[run].add(timeInner);
+                            this.aggregatedEntities.get(toCamelCase(instanceOf))[run].add(timeInner);
+                        }
+                        addGas(run, eventName, gasCost);
+                        incrementEntityCount(eventKey, run, entityTime);
                     }
-                    addGas(run, eventName, gasCost);
-                    incrementEntityCount(eventKey, run, entityTime);
                 }
             }
         }
-    }
 
     private Integer parseMaxProbabilityMatches(String maxProbabilityMatchesStr, int run) {
         if (maxProbabilityMatchesStr == null) return null;
