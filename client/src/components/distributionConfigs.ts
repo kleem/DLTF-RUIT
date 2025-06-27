@@ -24,9 +24,9 @@ export const defaultParamsByDistribution: Record<DistributionType, DistributionP
     },
     LOGNORMAL_SCALED: {
         type: "LOGNORMAL_SCALED",
-        mean: 0.6,              // leggermente spostato
-        std: 1.9,
-        scalingFactorX: 0.001,
+        mean: 1,              // leggermente spostato
+        std: 1,
+        scalingFactorX: 0.003,
         scalingFactorY: 1
     },
     EXPONENTIAL: {type: 'EXPONENTIAL', rate: 0.1, scalingFactor: 0.0001},
