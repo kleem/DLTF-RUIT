@@ -22,20 +22,10 @@ const modalStyle = {
     overflow: 'auto'
 };
 
+const CARD_HEIGHT = 90; // Ridotta ulteriormente l'altezza della card
+
 const FileSelector: React.FC<FileSelectorProps> = ({ csvFiles, selectedFiles, handleFileSelection }) => {
     const [selectedJson, setSelectedJson] = useState<string | null>(null);
-    const [openModal, setOpenModal] = useState(false);
-
-    const handleOpenModal = (json: string, event: React.MouseEvent) => {
-        event.stopPropagation();
-        setSelectedJson(json);
-        setOpenModal(true);
-    };
-
-    const handleCloseModal = () => {
-        setOpenModal(false);
-        setSelectedJson(null);
-    };
 
     const formatDate = (dateString: string) => {
         const date = new Date(dateString);
@@ -50,75 +40,122 @@ const FileSelector: React.FC<FileSelectorProps> = ({ csvFiles, selectedFiles, ha
     };
 
     return (
-        <Paper sx={{ p: 3, mb: 3 }}>
-            <Typography variant="h6" gutterBottom>Select Data Files</Typography>
-            <Grid container spacing={2}>
-                {csvFiles.map(file => {
-                    const alias = `${file.name} (${file.id})`;
-                    const formattedDate = formatDate(file.createdAt);
-                    return (
-                        <Grid item xs={12} sm={6} md={4} key={file.id}>
-                            <Paper
-                                sx={{
-                                    p: 2,
-                                    border: selectedFiles[alias] ? '2px solid #1976d2' : '1px solid #ddd',
-                                    cursor: 'pointer',
-                                    position: 'relative'
-                                }}
-                                onClick={() => handleFileSelection(file)}
-                            >
-                                <Typography variant="subtitle1">{file.name}</Typography>
-                                <Typography variant="caption" color="textSecondary" display="block">
+        <Box sx={{ width: '100%', mt: 2 }}>
+            <Typography variant="h6" gutterBottom sx={{ mb: 1 }}>
+                Select Data Files
+            </Typography>
+            <Grid container spacing={1.5}>
+                {csvFiles.map((file) => (
+                    <Grid item xs={12} sm={6} md={4} key={file.id}>
+                        <Paper 
+                            sx={{
+                                p: 1,
+                                cursor: 'pointer',
+                                border: selectedFiles[file.id] ? '2px solid #1976d2' : '1px solid #e0e0e0',
+                                position: 'relative',
+                                height: CARD_HEIGHT,
+                                display: 'flex',
+                                flexDirection: 'column',
+                                '&:hover': {
+                                    boxShadow: 2
+                                }
+                            }}
+                            onClick={() => handleFileSelection(file)}
+                        >
+                            <Box sx={{ 
+                                display: 'flex', 
+                                justifyContent: 'space-between', 
+                                alignItems: 'center',
+                                mb: 0.25
+                            }}>
+                                <Box sx={{ flex: 1, mr: 0.5 }}>
+                                    <Typography variant="caption" component="div" sx={{ 
+                                        fontWeight: 'medium',
+                                        overflow: 'hidden',
+                                        textOverflow: 'ellipsis',
+                                        whiteSpace: 'nowrap',
+                                        fontSize: '0.875rem'
+                                    }}>
+                                        {file.name}
+                                    </Typography>
+                                </Box>
+                                {file.configurationJson && (
+                                    <IconButton 
+                                        size="small"
+                                        onClick={(e) => {
+                                            e.stopPropagation();
+                                            setSelectedJson(file.configurationJson);
+                                        }}
+                                        sx={{ 
+                                            p: 0.25,
+                                            '& .MuiSvgIcon-root': {
+                                                fontSize: '1rem'
+                                            }
+                                        }}
+                                    >
+                                        <Code fontSize="small" />
+                                    </IconButton>
+                                )}
+                            </Box>
+                            
+                            <Box sx={{ flex: 1, fontSize: '0.75rem' }}>
+                                <Typography variant="caption" color="text.secondary" display="block" sx={{ fontSize: 'inherit' }}>
                                     ID: {file.id}
                                 </Typography>
-                                <Typography variant="caption" color="textSecondary" display="block">
-                                    Created: {formattedDate}
+                                <Typography variant="caption" color="text.secondary" display="block" sx={{ fontSize: 'inherit' }}>
+                                    Created: {formatDate(file.createdAt)}
                                 </Typography>
-                                <Typography variant="caption" color="textSecondary" display="block">
+                                <Typography variant="caption" color="text.secondary" display="block" sx={{ fontSize: 'inherit' }}>
                                     Columns: {file.columns.length}
                                 </Typography>
-                                
-                                <Box sx={{ position: 'absolute', top: 8, right: 8 }}>
-                                    {file.configurationJson && (
-                                        <IconButton 
-                                            size="small" 
-                                            onClick={(e) => handleOpenModal(file.configurationJson, e)}
-                                            sx={{ mr: 1 }}
-                                        >
-                                            <Code fontSize="small" />
-                                        </IconButton>
-                                    )}
-                                </Box>
-                            </Paper>
-                        </Grid>
-                    );
-                })}
+                            </Box>
+
+                            {file.description && (
+                                <Tooltip title={file.description} placement="top">
+                                    <IconButton 
+                                        size="small" 
+                                        sx={{ 
+                                            position: 'absolute', 
+                                            right: 2, 
+                                            bottom: 2,
+                                            p: 0.25,
+                                            '& .MuiSvgIcon-root': {
+                                                fontSize: '1rem'
+                                            }
+                                        }}
+                                    >
+                                        <Info fontSize="small" />
+                                    </IconButton>
+                                </Tooltip>
+                            )}
+                        </Paper>
+                    </Grid>
+                ))}
             </Grid>
 
             <Modal
-                open={openModal}
-                onClose={handleCloseModal}
+                open={!!selectedJson}
+                onClose={() => setSelectedJson(null)}
                 aria-labelledby="json-modal-title"
             >
                 <Box sx={modalStyle}>
                     <Typography id="json-modal-title" variant="h6" component="h2" gutterBottom>
-                        Simulation Configuration
+                        Configuration JSON
                     </Typography>
-                    <Box 
-                        component="pre" 
-                        sx={{ 
-                            bgcolor: '#f5f5f5', 
-                            p: 2, 
-                            borderRadius: 1,
-                            overflow: 'auto',
-                            maxHeight: 'calc(80vh - 100px)'
-                        }}
-                    >
-                        {selectedJson ? JSON.stringify(JSON.parse(selectedJson), null, 2) : ''}
+                    <Box sx={{ 
+                        backgroundColor: '#f5f5f5',
+                        p: 2,
+                        borderRadius: 1,
+                        maxHeight: 'calc(70vh - 100px)',
+                        overflow: 'auto'
+                    }}>
+                        <pre style={{ margin: 0, whiteSpace: 'pre-wrap', wordWrap: 'break-word' }}>
+                            {selectedJson ? JSON.stringify(JSON.parse(selectedJson), null, 2) : ''}
+                        </pre>
                     </Box>
                 </Box>
             </Modal>
-        </Paper>
+        </Box>
     );
 };
 

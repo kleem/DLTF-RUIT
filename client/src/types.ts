@@ -125,14 +125,15 @@ export type ProbabilityDistribution = {
     [key: string]: any;
 };
 
-export type SimulationConfig = {
+export interface SimulationConfig {
+    name: string;
+    description?: string;
+    maxTime: number;
+    numAggr: number;
+    numRuns: number;
     entities: string[];
     events: Event[];
-    name: string;
-    numAggr: number;
-    maxTime: number;
-    numRuns: number | string;
-};
+}
 
 export type EventDependency = {
     dependOn: string | null;

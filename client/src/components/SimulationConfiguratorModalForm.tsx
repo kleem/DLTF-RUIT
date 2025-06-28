@@ -154,6 +154,7 @@ const SimulationConfiguratorModalForm: React.FC = () => {
     const [events, setEvents] = useState<Event[]>([]);
     const [openDistributions, setOpenDistributions] = useState<(boolean | boolean[])[]>([]);
     const [name, setName] = useState("Simulation");
+    const [description, setDescription] = useState("");
     const [duration, setDuration] = useState<number>(604800);
     const [aggregation, setAggregation] = useState<number>(60);
     const [entityInput, setEntityInput] = useState("");
@@ -190,6 +191,7 @@ const SimulationConfiguratorModalForm: React.FC = () => {
     const handleReset = () => {
         if (window.confirm("Are you sure you want to reset all fields?")) {
             setName("");
+            setDescription("");
             setDuration(604800);
             setAggregation(60);
             setEntityInput("");
@@ -217,6 +219,7 @@ const SimulationConfiguratorModalForm: React.FC = () => {
 
     const handleImportConfig = (config: SimulationConfig) => {
         setName(config.name);
+        setDescription(config.description || "");
         setDuration(config.maxTime);
         setAggregation(config.numAggr);
         setNumRuns(config.numRuns);
@@ -348,6 +351,7 @@ const SimulationConfiguratorModalForm: React.FC = () => {
             numAggr: aggregation,
             numRuns: numRuns,
             name: name,
+            description: description,
             entities: entities,
             events: events.map(event => ({
                 ...event,
@@ -374,12 +378,13 @@ const SimulationConfiguratorModalForm: React.FC = () => {
 
     const handlePreview = () => {
         const config: SimulationConfig = {
-            entities,
-            events,
             name,
-            numAggr: aggregation as number,
-            maxTime: duration as number,
-            numRuns: numRuns as number,
+            description,
+            maxTime: duration,
+            numAggr: aggregation,
+            numRuns: Number(numRuns),
+            entities,
+            events
         };
         setConfigPreview(config);
     };
@@ -526,6 +531,16 @@ const SimulationConfiguratorModalForm: React.FC = () => {
                                             fullWidth
                                             value={name}
                                             onChange={(e) => setName(e.target.value)}
+                                        />
+                                        <TextField
+                                            label="Description"
+                                            size="small"
+                                            fullWidth
+                                            multiline
+                                            rows={2}
+                                            value={description}
+                                            onChange={(e) => setDescription(e.target.value)}
+                                            helperText="Optional: Add a description for this simulation"
                                         />
                                         <Box sx={{ display: 'flex', gap: 2 }}>
                                         <TextField
