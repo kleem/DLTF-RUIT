@@ -1,12 +1,16 @@
 #!/bin/zsh
 
+# Clean up old images
+echo "Removing old plots..."
+rm -f ./output/img/dao_comparison_*.png
+
 # ============================================================================
 # Input Files Configuration
 # ============================================================================
 file1="output/DAO-UniformProposal-DynamicVote_t1209600_aggr3600_20250628161039.tsv"
 file2="output/DAO-UniformProposal-GartnerVote_t1209600_aggr3600_20250628161537.tsv"
 file3="output/2peakUser_t1209600_aggr3600_20250628163123.tsv"
-file4="output/DAO-2PeakUsers-and-Proposal_t1209600_aggr3600_20250628164018.tsv"
+file4="output/DAO-2PeakUsers-and-Proposal_t1209600_aggr3600_20250629163944.tsv"
 file5="output/DAO-peakOnProposal_t1209600_aggr3600_20250629085958.tsv"
 
 # Check if files exist
@@ -223,32 +227,32 @@ plot '$file1' using 1:22 smooth bezier with lines lw 2 lc rgb '#1f77b4' title 'U
      '' using 1:22:(\$22-\$23):(\$22+\$23) with filledcurves lc rgb '#9467bd' fs transparent solid 0.2 notitle
 EOF
 
-# ============================================================================
-# Plot Average Votes Per Run - LINES ONLY VERSION (Alternative)
-# ============================================================================
-gnuplot << EOF
-$common_settings
-set output './output/img/dao_comparison_AvgVotesPerRun_lines.png'
-set title 'Average Votes Per Run Comparison (Lines Only)'
-set ylabel 'Average Number of Votes per Run'
-set bars 2.0
+  # ============================================================================
+  # Plot Average Votes Per Run - LINES ONLY VERSION (Alternative)
+  # ============================================================================
+  gnuplot << EOF
+  $common_settings
+  set output './output/img/dao_comparison_AvgVotesPerRun_lines.png'
+  set title 'Average Votes Per Run Comparison (Lines Only)'
+  set ylabel 'Average Number of Votes per Run'
+  set bars 2.0
 
-# Settings for line-only version
-set key outside right center vertical box width 1.5
-set key font 'Times-New-Roman,10'
+  # Settings for line-only version
+  set key outside right center vertical box width 1.5
+  set key font 'Times-New-Roman,10'
 
-# Plot with lines and error bars only
-plot '$file1' using 1:22:23 with yerrorbars lw 2 pt 7 ps 0.5 lc rgb '#1f77b4' title 'Uniform Dynamic', \
-     '' using 1:22 smooth bezier with lines lw 2 lc rgb '#1f77b4' notitle, \
-     '$file2' using 1:22:23 with yerrorbars lw 2 pt 7 ps 0.5 lc rgb '#ff7f0e' title 'Uniform Gartner', \
-     '' using 1:22 smooth bezier with lines lw 2 lc rgb '#ff7f0e' notitle, \
-     '$file3' using 1:22:23 with yerrorbars lw 2 pt 7 ps 0.5 lc rgb '#2ca02c' title 'Two Peaks Dynamic', \
-     '' using 1:22 smooth bezier with lines lw 2 lc rgb '#2ca02c' notitle, \
-     '$file4' using 1:22:23 with yerrorbars lw 2 pt 7 ps 0.5 lc rgb '#d62728' title '2 Peak Users+Prop', \
-     '' using 1:22 smooth bezier with lines lw 2 lc rgb '#d62728' notitle, \
-     '$file5' using 1:22:23 with yerrorbars lw 2 pt 7 ps 0.5 lc rgb '#9467bd' title 'Peak Proposal', \
-     '' using 1:22 smooth bezier with lines lw 2 lc rgb '#9467bd' notitle
-EOF
+  # Plot with lines and error bars only
+  plot '$file1' using 1:22:23 with yerrorbars lw 2 pt 7 ps 0.5 lc rgb '#1f77b4' title 'Uniform Dynamic', \
+       '' using 1:22 smooth bezier with lines lw 2 lc rgb '#1f77b4' notitle, \
+       '$file2' using 1:22:23 with yerrorbars lw 2 pt 7 ps 0.5 lc rgb '#ff7f0e' title 'Uniform Gartner', \
+       '' using 1:22 smooth bezier with lines lw 2 lc rgb '#ff7f0e' notitle, \
+       '$file3' using 1:22:23 with yerrorbars lw 2 pt 7 ps 0.5 lc rgb '#2ca02c' title 'Two Peaks Dynamic', \
+       '' using 1:22 smooth bezier with lines lw 2 lc rgb '#2ca02c' notitle, \
+       '$file4' using 1:22:23 with yerrorbars lw 2 pt 7 ps 0.5 lc rgb '#d62728' title '2 Peak Users+Prop', \
+       '' using 1:22 smooth bezier with lines lw 2 lc rgb '#d62728' notitle, \
+       '$file5' using 1:22:23 with yerrorbars lw 2 pt 7 ps 0.5 lc rgb '#9467bd' title 'Peak Proposal', \
+       '' using 1:22 smooth bezier with lines lw 2 lc rgb '#9467bd' notitle
+  EOF
 
 # ============================================================================
 # Plot Average Votes Per Run - LOG SCALE VERSION (for better readability)
@@ -363,3 +367,96 @@ plot '$file1' using 1:22 smooth bezier with lines lw 4 lc rgb '#000080' title 'U
 EOF
 
 echo "Generated improved plots for better readability!"
+
+# ============================================================================
+# Plot Vote-to-Proposal Ratio (Engagement Efficiency)
+# ============================================================================
+gnuplot << EOF
+$common_settings
+set output './output/img/dao_comparison_VoteProposalRatio.png'
+set title 'Vote-to-Proposal Ratio (Engagement Efficiency)'
+set ylabel 'Votes per Proposal'
+
+# Add check to avoid division by zero
+plot '$file1' using 1:(\$17>0 ? \$22/\$17 : 0) smooth bezier with lines lw 3 lc 'forest-green' title 'Uniform Dynamic', \
+     '$file2' using 1:(\$17>0 ? \$22/\$17 : 0) smooth bezier with lines lw 3 lc 'dark-orange' title 'Uniform Gartner', \
+     '$file3' using 1:(\$17>0 ? \$22/\$17 : 0) smooth bezier with lines lw 3 lc 'purple' title 'Two Peaks Dynamic', \
+     '$file4' using 1:(\$17>0 ? \$22/\$17 : 0) smooth bezier with lines lw 3 lc 'red' title '2 Peak Users+Prop', \
+     '$file5' using 1:(\$17>0 ? \$22/\$17 : 0) smooth bezier with lines lw 3 lc 'brown' title 'Peak Proposal'
+EOF
+
+# ============================================================================
+# Plot User Participation Rate (Votes per User)
+# ============================================================================
+gnuplot << EOF
+$common_settings
+set output './output/img/dao_comparison_UserParticipation.png'
+set title 'User Participation Rate (Votes per User)'
+set ylabel 'Average Votes per User'
+
+# Add check to avoid division by zero
+plot '$file1' using 1:(\$27>0 ? \$22/\$27 : 0) smooth bezier with lines lw 3 lc 'forest-green' title 'Uniform Dynamic', \
+     '$file2' using 1:(\$27>0 ? \$22/\$27 : 0) smooth bezier with lines lw 3 lc 'dark-orange' title 'Uniform Gartner', \
+     '$file3' using 1:(\$27>0 ? \$22/\$27 : 0) smooth bezier with lines lw 3 lc 'purple' title 'Two Peaks Dynamic', \
+     '$file4' using 1:(\$27>0 ? \$22/\$27 : 0) smooth bezier with lines lw 3 lc 'red' title '2 Peak Users+Prop', \
+     '$file5' using 1:(\$27>0 ? \$22/\$27 : 0) smooth bezier with lines lw 3 lc 'brown' title 'Peak Proposal'
+EOF
+
+# ============================================================================
+# Plot Proposal Creation Rate (Proposals per User)
+# ============================================================================
+gnuplot << EOF
+$common_settings
+set output './output/img/dao_comparison_ProposalRate.png'
+set title 'Proposal Creation Rate (Proposals per User)'
+set ylabel 'Proposals per User'
+
+# Add check to avoid division by zero
+plot '$file1' using 1:(\$27>0 ? \$17/\$27 : 0) smooth bezier with lines lw 3 lc 'forest-green' title 'Uniform Dynamic', \
+     '$file2' using 1:(\$27>0 ? \$17/\$27 : 0) smooth bezier with lines lw 3 lc 'dark-orange' title 'Uniform Gartner', \
+     '$file3' using 1:(\$27>0 ? \$17/\$27 : 0) smooth bezier with lines lw 3 lc 'purple' title 'Two Peaks Dynamic', \
+     '$file4' using 1:(\$27>0 ? \$17/\$27 : 0) smooth bezier with lines lw 3 lc 'red' title '2 Peak Users+Prop', \
+     '$file5' using 1:(\$27>0 ? \$17/\$27 : 0) smooth bezier with lines lw 3 lc 'brown' title 'Peak Proposal'
+EOF
+
+
+
+# ============================================================================
+# Plot Activity Intensity Heatmap Style
+# ============================================================================
+gnuplot << EOF
+set terminal pngcairo enhanced size 1400,800 font 'Times-New-Roman,12'
+set output './output/img/dao_comparison_ActivityHeatmap.png'
+set title 'DAO Activity Intensity Over Time' font 'Times-New-Roman,16'
+set xlabel 'Time (days)' font 'Times-New-Roman,14'
+set ylabel 'Vote Activity (scaled)' font 'Times-New-Roman,14'
+
+# Standard settings
+set key outside right center vertical box width 1.5
+set key font 'Times-New-Roman,10'
+set xtics ('0' 0, '2d' 172800, '4d' 345600, '6d' 518400, '8d' 691200, '10d' 864000, '12d' 1036800, '14d' 1209600)
+
+# Plot with lines only (no fill) to show activity intensity
+plot '$file1' using 1:(\$22/1000) with lines lw 2 lc rgb '#228B22' title 'Uniform Dynamic', \
+     '$file2' using 1:(\$22/1000) with lines lw 2 lc rgb '#FF8C00' title 'Uniform Gartner', \
+     '$file3' using 1:(\$22/1000) with lines lw 2 lc rgb '#9370DB' title 'Two Peaks', \
+     '$file4' using 1:(\$22/1000) with lines lw 2 lc rgb '#DC143C' title '2 Peak Users', \
+     '$file5' using 1:(\$22/1000) with lines lw 2 lc rgb '#8B4513' title 'Peak Proposal'
+EOF
+
+# # ============================================================================
+# # Plot Cumulative Performance Comparison
+# # ============================================================================
+# gnuplot << EOF
+# $common_settings
+# set output './output/img/dao_comparison_CumulativePerformance.png'
+# set title 'Cumulative DAO Performance (Total Activity Score)'
+# set ylabel 'Cumulative Activity Score'
+
+# # Combined metric: Users + Proposals*10 + Votes/100
+# plot '$file1' using 1:(\$27 + \$17*10 + \$22/100) smooth bezier with lines lw 4 lc 'forest-green' title 'Uniform Dynamic', \
+#      '$file2' using 1:(\$27 + \$17*10 + \$22/100) smooth bezier with lines lw 4 lc 'dark-orange' title 'Uniform Gartner', \
+#      '$file3' using 1:(\$27 + \$17*10 + \$22/100) smooth bezier with lines lw 3 lc 'purple' title 'Two Peaks Dynamic', \
+#      '$file4' using 1:(\$27 + \$17*10 + \$22/100) smooth bezier with lines lw 3 lc 'red' title '2 Peak Users+Prop', \
+#      '$file5' using 1:(\$27 + \$17*10 + \$22/100) smooth bezier with lines lw 3 lc 'brown' title 'Peak Proposal'
+# EOF
