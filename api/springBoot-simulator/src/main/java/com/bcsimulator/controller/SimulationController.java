@@ -1,5 +1,6 @@
 package com.bcsimulator.controller;
 
+import com.bcsimulator.dto.AbstractDistributionDTO;
 import com.bcsimulator.dto.EventDTO;
 import com.bcsimulator.dto.JobStatusDTO;
 import com.bcsimulator.dto.SimulationRequestDTO;
@@ -67,7 +68,31 @@ public class SimulationController {
 
     @PostMapping("/newsimulation")
     public ResponseEntity<?> runNewSimulation(@RequestBody SimulationRequestDTO request) throws JobInstanceAlreadyCompleteException, JobExecutionAlreadyRunningException, JobParametersInvalidException, JobRestartException {
+        System.out.println("[DEBUG] Received SimulationRequest:");
+        System.out.println("  name: " + request.getName());
+        System.out.println("  numRuns: " + request.getNumRuns());
+        System.out.println("  maxTime: " + request.getMaxTime());
+        System.out.println("  events:");
 
+        for (EventDTO event : request.getEvents()) {
+            System.out.printf("    Event: %s%n", event.getEventName());
+            System.out.println("    Description: " + event.getDescription());
+            System.out.println("    InstanceOf: " + event.getInstanceOf());
+            if (event.getDependencies() != null && !event.getDependencies().isEmpty()) {
+                System.out.println("    Dependencies:");
+                event.getDependencies().forEach(dep -> {
+                    System.out.println("      DependOn: " + dep.getDependOn());
+                    System.out.println("      MaxProbabilityMatches: " + dep.getMaxProbabilityMatches());
+                    AbstractDistributionDTO dist = dep.getProbabilityDistribution();
+                    System.out.println("      Distribution:");
+                    System.out.println("        Type: " + dist.getType());
+                    System.out.println("        Full: " + dist);
+                });
+            } else {
+                System.out.println("    No dependencies");
+            }
+            System.out.println("    GasCost: " + event.getGasCost());
+        }
         try {
             System.out.println("Events: " + request.getEvents()); // <-- per debug
             Map<String, Object> response = simulationJobService.runSimulation(request);

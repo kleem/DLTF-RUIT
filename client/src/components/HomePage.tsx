@@ -162,6 +162,11 @@ function HomePage() {
                             Test4
                         </Button>
                     </Link>
+                    <Link to="/tuner">
+                        <Button variant="contained" color="primary">
+                            Tuner
+                        </Button>
+                    </Link>
                 </Stack>
             </Collapse>
         </Container>

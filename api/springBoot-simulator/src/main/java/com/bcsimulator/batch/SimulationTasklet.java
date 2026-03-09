@@ -25,6 +25,9 @@ import java.time.LocalDateTime;
 import java.util.Objects;
 import java.util.stream.Stream;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+
 @Component
 @Slf4j
 public class SimulationTasklet implements Tasklet {
@@ -69,22 +72,41 @@ public class SimulationTasklet implements Tasklet {
                 updateProgressInContext(chunkContext, progress, jobExecutionId);
             }
             log.info("Ending sim of " + simParams.getNumRuns() + " runs.");
-            CsvFile savedFile = registerCsvFile(simParams.getName(), params.getString("outfile"));
+            
+            // Try to register the CSV file in database, but don't fail if ApplicationContext is closed
+            try {
+            CsvFile savedFile = registerCsvFile(simParams.getName(), params.getString("outfile"), simParams);
+                log.info("Successfully registered CSV file in database with id: {}", savedFile.getId());
+            } catch (Exception e) {
+                log.warn("Failed to register CSV file in database (likely due to ApplicationContext closure): {}. CSV file was created successfully at: {}", 
+                         e.getMessage(), params.getString("outfile"));
+                // Don't throw exception - the simulation and file creation were successful
+            }
         } catch (IOException ex) {
             System.err.println("ERROR WHILE WRITING TO FILE.");
             ex.printStackTrace();
+            throw ex; // Re-throw IOException as it's a critical failure
         }
 
 
         return RepeatStatus.FINISHED;
     }
 
-    private CsvFile registerCsvFile(String name, String filePath) {
+    private CsvFile registerCsvFile(String name, String filePath, SimulationRequestDTO simParams) {
         CsvFile file = new CsvFile();
         file.setName(name);
         file.setPath(filePath);
         file.setCreatedAt(LocalDateTime.now());
         file.setColumns(readCsvHeader(filePath));
+        
+        // Save the simulation configuration JSON
+        try {
+            ObjectMapper mapper = new ObjectMapper();
+            file.setConfigurationJson(mapper.writeValueAsString(simParams));
+        } catch (JsonProcessingException e) {
+            log.error("Error serializing simulation configuration", e);
+            file.setConfigurationJson("{}"); // Fallback to empty JSON
+        }
 
         CsvFile savedFile = csvFileRepository.save(file);
 

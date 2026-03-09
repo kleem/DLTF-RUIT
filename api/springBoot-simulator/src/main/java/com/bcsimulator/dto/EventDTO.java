@@ -5,6 +5,8 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.util.List;
+
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
@@ -14,16 +16,17 @@ public class EventDTO {
      */
     private String eventName;
     /**
-     * event name
+     * event description
      */
-    private String eventDescription;
-    private String instanceOf;
-    private String dependOn;
+    private String description;
     /**
-     * probability distribution of the event
+     * The entity type that this event creates (if any)
      */
-    @NotNull(message = "The field 'probabilityDistribution' to define the probabilityDistribution is mandatory.")
-    private AbstractDistributionDTO probabilityDistribution;
+    private String instanceOf;
+    /**
+     * List of dependencies for this event
+     */
+    private List<EventDependencyDTO> dependencies;
     /**
      * gas cost of the event
      */
