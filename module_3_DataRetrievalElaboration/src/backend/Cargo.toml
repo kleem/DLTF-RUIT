@@ -1,0 +1,15 @@
+[package]
+name = "backend"
+version = "0.1.0"
+edition = "2024"
+
+[dependencies]
+webgraph = { git = "https://github.com/vigna/webgraph-rs" }
+avgdist-rs = { git = "https://github.com/massimo-nocentini/avgdist-rs.git", branch = "middle-mem" }
+rayon = "1.10.0"
+rand = "0.9.1"
+time-format = "1.2.1"
+
+[dependencies.rocket]
+version = "0.5.1"
+features = ["json", "msgpack", "uuid"]
