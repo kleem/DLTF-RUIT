@@ -8,8 +8,6 @@ import {
     TextField,
     Box,
 } from '@mui/material';
-import { SimulatorFormModal } from './SimulatorFormModal';  // Importa il tuo form principale
-import axios from 'axios';
 
 const ImportJsonModal = ({ setFormData, formData }: any) => {
     const [open, setOpen] = useState(false);

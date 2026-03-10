@@ -5,7 +5,7 @@ import { Link } from 'react-router-dom';
 import CsvFileList from '../components/CsvFileList';
 import ChartConfigPanel from '../components/ChartConfigPanel';
 import ChartViewer from '../components/ChartViewer';
-import { CsvFile } from '../types/CsvFile';
+import { CsvFile } from './types/CsvFile';
 
 const ResultsPage: React.FC = () => {
     const [csvFiles, setCsvFiles] = useState<CsvFile[]>([]);

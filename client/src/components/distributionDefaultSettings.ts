@@ -7,7 +7,7 @@ interface SliderSetting {
     step: number;
 }
 
-export const sliderSettingsByDistribution: Record<DistributionType, Record<string, SliderSetting>> = {
+export const sliderSettingsByDistribution: Partial<Record<DistributionType, Record<string, SliderSetting>>> = {
     NORMAL: {
         mean: { label: 'Mean', min: 1, max: 604800, step: 100 },
         std: { label: 'Std Dev', min: 10, max: 100000, step: 10 },

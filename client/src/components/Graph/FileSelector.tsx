@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
-import { Box, Grid, Paper, Typography, Modal, IconButton, Tooltip, Chip } from '@mui/material';
+import { Box, Paper, Typography, Modal, IconButton, Tooltip, Chip } from '@mui/material';
+import Grid from '@mui/material/GridLegacy';
 import { Info, Code, CheckCircle } from '@mui/icons-material';
 import {CsvFileDTO} from "../types/types.ts";
 

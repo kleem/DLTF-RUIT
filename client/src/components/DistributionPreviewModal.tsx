@@ -7,8 +7,7 @@ import {
     Box,
     Slider,
     Typography,
-    Stack,
-    Grid
+    Stack
 } from '@mui/material';
 import { Close } from '@mui/icons-material';
 import { Line } from 'react-chartjs-2';

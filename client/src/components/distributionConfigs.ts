@@ -1,6 +1,6 @@
 import {DistributionParams, DistributionType} from "../types.ts";
 
-export const defaultParamsByDistribution: Record<DistributionType, DistributionParams> = {
+export const defaultParamsByDistribution: Partial<Record<DistributionType, DistributionParams>> = {
     FIXED: {type: 'FIXED', fixedTime: 100},
     UNIFORM: {type: 'UNIFORM', value: 0.0001},
     NORMAL: {

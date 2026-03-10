@@ -1,5 +1,5 @@
 import React from 'react';
-import { List, ListItem, ListItemText, Checkbox } from '@mui/material';
+import { List, ListItem, ListItemButton, ListItemText, Checkbox } from '@mui/material';
 import {CsvFile} from "./types/CsvFile.ts";
 
 interface Props {
@@ -20,9 +20,11 @@ const CsvFileList: React.FC<Props> = ({ csvFiles, selectedFiles, setSelectedFile
     return (
         <List>
             {csvFiles.map((file) => (
-                <ListItem key={file.id} button onClick={() => handleToggle(file)} selected={selectedFiles.some((f) => f.id === file.id)}>
-                    <Checkbox checked={selectedFiles.some((f) => f.id === file.id)} />
-                    <ListItemText primary={file.name} secondary={file.path} />
+                <ListItem key={file.id} disablePadding>
+                    <ListItemButton onClick={() => handleToggle(file)} selected={selectedFiles.some((f) => f.id === file.id)}>
+                        <Checkbox checked={selectedFiles.some((f) => f.id === file.id)} />
+                        <ListItemText primary={file.name} secondary={file.path} />
+                    </ListItemButton>
                 </ListItem>
             ))}
         </List>

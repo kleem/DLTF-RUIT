@@ -79,8 +79,10 @@ const GraphRequestForm: React.FC = () => {
                     }) => {
                         const fileAlias = file.alias;
                         acc[fileAlias] = {
+                            id: 0,
                             name: fileAlias,
                             path: file.path,
+                            createdAt: '',
                             columns: [] // Assicurati di riempire anche la lista delle colonne
                         };
                         return acc;
@@ -188,7 +190,7 @@ const GraphRequestForm: React.FC = () => {
             // Formatta automaticamente l'espressione "using"
             if (field === 'using' && newPlots[index].dataFileAlias) {
                 const file = selectedFiles[newPlots[index].dataFileAlias];
-                value = formatUsingExpression(value, file?.columns || []);
+                value = formatUsingExpression(value);
             }
 
             if (field.includes('.')) {
@@ -266,6 +268,9 @@ const GraphRequestForm: React.FC = () => {
                         updatePlot={updatePlot}
                         removePlot={removePlot}
                         setExpandedPlot={setExpandedPlot}
+                        onAddPlot={addPlot}
+                        plotsCount={request.plots.length}
+                        generationResult={generationResult}
                     />
                 ))}
             </Paper>

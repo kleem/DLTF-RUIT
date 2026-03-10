@@ -4,7 +4,6 @@ import {
     Typography,
     Button,
     Paper,
-    Grid,
     TextField,
     FormControl,
     InputLabel,
@@ -20,6 +19,7 @@ import {
     Stack,
     Divider
 } from '@mui/material';
+import Grid from '@mui/material/GridLegacy';
 import { ExpandLess, ExpandMore, Delete, AddCircle } from '@mui/icons-material';
 import { PlotConfigDTO } from '../types/types.ts';
 

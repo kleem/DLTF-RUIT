@@ -6,6 +6,8 @@ export interface CsvFileDTO {
     path: string;
     createdAt: string;
     columns: string[];
+    configurationJson?: string;
+    description?: string;
 }
 
 export interface FillConfigDTO {
@@ -40,4 +42,3 @@ export interface GraphRequestDTO {
     }[];
     plots: PlotConfigDTO[];
 }
-

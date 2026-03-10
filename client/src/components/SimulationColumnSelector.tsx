@@ -12,7 +12,6 @@ import {
     FormControlLabel,
     FormGroup,
     FormLabel,
-    Grid,
     InputLabel,
     MenuItem,
     Paper,
@@ -20,6 +19,7 @@ import {
     SelectChangeEvent,
     Typography,
 } from '@mui/material';
+import Grid from '@mui/material/GridLegacy';
 import {CsvFile} from "./types/CsvFile.ts";
 
 // Interfacce per i tipi di dati

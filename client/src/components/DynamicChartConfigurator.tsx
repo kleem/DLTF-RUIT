@@ -2,9 +2,10 @@ import React, { useEffect, useState } from "react";
 import axios from "axios";
 import {
     Box, Button, TextField, Typography, Select, MenuItem,
-    InputLabel, FormControl, Chip, Autocomplete, Grid,
+    InputLabel, FormControl, Chip, Autocomplete,
     Tabs, Tab, Divider, Slider, InputAdornment
 } from "@mui/material";
+import Grid from "@mui/material/GridLegacy";
 import {
     LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip,
     Legend, ReferenceLine, ResponsiveContainer

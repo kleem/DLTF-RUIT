@@ -5,8 +5,9 @@ import {
     Select, MenuItem, InputLabel, FormControl, CircularProgress,
     Tabs, Tab, Paper, Divider, IconButton, Tooltip as MuiTooltip,
     Alert, Chip, Stack, Slider, Switch, Dialog, DialogTitle,
-    DialogContent, DialogActions, FormGroup, Grid
+    DialogContent, DialogActions, FormGroup
 } from "@mui/material";
+import Grid from "@mui/material/GridLegacy";
 import {
     LineChart, Line, ScatterChart, Scatter, AreaChart, Area,
     XAxis, YAxis, CartesianGrid, Tooltip, Legend, ReferenceLine,
@@ -185,7 +186,7 @@ const AdvancedChartConfigurator: React.FC = () => {
             if (layer?.formula) {
                 try {
                     // Generate data based on formula
-                    const scope = { x: xValues };
+                    const scope: { x: number | number[] } = { x: xValues };
                     const expr = layer.formula.replace(/\$(\d+)/g, (_, colIdx) => {
                         return `x[${colIdx-1}]`;
                     });

@@ -8,7 +8,6 @@ import {
     DialogTitle,
     Divider,
     FormControl,
-    Grid,
     InputLabel,
     MenuItem,
     Select,
@@ -16,6 +15,7 @@ import {
     TextField,
     Typography
 } from '@mui/material';
+import Grid from '@mui/material/GridLegacy';
 import {Line} from 'react-chartjs-2';
 import {CategoryScale, Chart, LinearScale, LineElement, LogarithmicScale, PointElement} from 'chart.js';
 import {DistributionParams, DistributionType, distributionTypes} from "../types.ts";
@@ -71,7 +71,6 @@ const DistributionModal: React.FC<Props> = ({open, onClose, onConfirm, initialVa
     const renderSliderEditor = (key: keyof DistributionParams) => {
         if (typeof params[key] !== 'number') return null;
 
-        const label = key.charAt(0).toUpperCase() + key.slice(1);
         const labelDescr = sliderSettings[key]?.label ?? '';
 
         const min = sliderSettings[key]?.min ?? 0;
@@ -131,7 +130,6 @@ const DistributionModal: React.FC<Props> = ({open, onClose, onConfirm, initialVa
                                     [key]: isNaN(value) ? prev[key] : value,
                                 }));
                             }}
-                            step={step}
                             sx={{width: 100}}
                         />
                     </Grid>
@@ -318,7 +316,7 @@ const DistributionModal: React.FC<Props> = ({open, onClose, onConfirm, initialVa
                                 },
                                 y: {
                                     type: "linear",
-                                    beginAtZero: 'linear',
+                                    beginAtZero: true,
                                     max: yRange,
                                     title: {display: true, text: 'Probability'},
                                     // ticks: {
@@ -369,6 +367,5 @@ const DistributionModal: React.FC<Props> = ({open, onClose, onConfirm, initialVa
 };
 
 export default DistributionModal;
-
 
 

@@ -9,7 +9,6 @@ import {
     Collapse,
     FormControl,
     FormControlLabel,
-    Grid,
     IconButton,
     InputLabel,
     MenuItem,
@@ -18,6 +17,7 @@ import {
     TextField,
     Typography
 } from '@mui/material';
+import Grid from '@mui/material/GridLegacy';
 import {Add, ExpandLess, ExpandMore, Remove, Send} from '@mui/icons-material';
 import {Link, useNavigate} from "react-router-dom";
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
@@ -131,8 +131,10 @@ const GraphRequestOldForm: React.FC = () => {
                     }) => {
                         const fileAlias = file.alias;
                         acc[fileAlias] = {
+                            id: 0,
                             name: fileAlias,
                             path: file.path,
+                            createdAt: '',
                             columns: [] // Assicurati di riempire anche la lista delle colonne
                         };
                         return acc;
@@ -250,7 +252,7 @@ const GraphRequestOldForm: React.FC = () => {
             // Formatta automaticamente l'espressione "using"
             if (field === 'using' && newPlots[index].dataFileAlias) {
                 const file = selectedFiles[newPlots[index].dataFileAlias];
-                value = formatUsingExpression(value, file?.columns || []);
+                value = formatUsingExpression(value);
             }
 
             if (field.includes('.')) {

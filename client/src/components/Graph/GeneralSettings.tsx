@@ -2,7 +2,6 @@ import React from 'react';
 import {
     Box,
     Typography,
-    Grid,
     TextField,
     FormControl,
     InputLabel,
@@ -11,6 +10,7 @@ import {
     FormControlLabel,
     Checkbox
 } from '@mui/material';
+import Grid from '@mui/material/GridLegacy';
 
 interface GeneralSettingsProps {
     request: any;
