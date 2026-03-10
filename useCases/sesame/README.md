@@ -4,16 +4,20 @@
   <img src="Sesame-ico.png" alt="SESAME logo" width="140" />
 </p>
 
-SESAME is a simulation workspace for configuring, running, and analyzing blockchain-oriented scenarios.
+SESAME is a two-part application for configuring, running, and analyzing blockchain-oriented simulation scenarios.
 
-The project is organized as a two-part application:
-
-- a Spring Boot backend that runs simulations, stores generated CSV metadata, and exposes result and chart endpoints
-- a React + TypeScript frontend used to configure simulations, inspect outputs, and visualize results
+- The backend is a Spring Boot service that executes simulations, stores generated CSV metadata, and exposes chart and result endpoints.
+- The frontend is a React + TypeScript application used to configure scenarios, inspect generated data, and build charts.
 
 The default backend port is `8099`.
 
-## Quick Start
+## Project Structure
+
+- `api/springBoot-simulator`: Spring Boot backend
+- `client`: React frontend
+- `artifacts/final-results`: curated output files and reference assets kept in the repository
+
+## Usage
 
 ### Prerequisites
 
