@@ -5,7 +5,7 @@ https://observablehq.com/d/b5e14db77ba4ee9a@1591
 
 Examples of resulting visualizations of graphs with varying dimension and structure.
 
-In the diagram, the represented nodes are those progressively removed by the k-core decomposition algorithm. They are grouped into black circles whose area is proportional to the number of nodes they contain.
+In the diagrams, the represented nodes are those progressively removed by the k-core decomposition algorithm. They are grouped into black circles whose area is proportional to the number of nodes they contain.
 
 At each step `n` of the algorithm, the removed nodes (*n-shell*) are shown as a black circle, placed alongside a colored circle representing the core (*n-core*).
 
