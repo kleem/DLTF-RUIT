@@ -3,7 +3,16 @@
 https://observablehq.com/d/b5e14db77ba4ee9a@1591
 
 
-Examples of resulting visualizations of graphs with varying dimension and structure:
+Examples of resulting visualizations of graphs with varying dimension and structure.
+
+In the diagram, the represented nodes are those progressively removed by the k-core decomposition algorithm. They are grouped into black circles whose area is proportional to the number of nodes they contain.
+
+At each step `n` of the algorithm, the removed nodes (*n-shell*) are shown as a black circle, placed alongside a colored circle representing the core (*n-core*).
+
+Iteratively, higher-order cores are formed, and are depicted using progressively more intense colors. Every ten levels, the color intensity resets to a lighter shade while the hue changes. Since, in some cases, removing a shell may yield a core composed of multiple connected components (resulting in a branching structure in the decomposition tree), it is possible for multiple colored circles—each representing a connected component of the core—to appear next to a single black circle corresponding to a shell. In such cases, the visualization highlights this condition with a black outline.
+
+This representation enables the identification of strongly connected regions of the graph, as these persist longer during the decomposition process and may indicate groups of nodes with significant topological relevance.
+
 
 <img width="3556" height="2119" alt="example3" src="https://github.com/user-attachments/assets/3344013c-ecec-48aa-8ec9-cac92bfb3e74" />
 
