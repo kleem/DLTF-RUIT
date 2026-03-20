@@ -2,6 +2,8 @@
 
 https://observablehq.com/d/b5e14db77ba4ee9a@1591
 
+Example visualizations:
+
 <img width="1718" height="1697" alt="example" src="https://github.com/user-attachments/assets/0db9be80-b55c-4316-bcaa-0ba07b53514b" />
 
 <img width="1701" height="1624" alt="example2" src="https://github.com/user-attachments/assets/278e75b3-100a-49ce-a938-652d56202d78" />
