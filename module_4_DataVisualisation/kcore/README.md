@@ -22,12 +22,6 @@ A graph often contains dense regions that remain connected even after progressiv
 
 The output is useful for exploring how the graph breaks into shells and denser inner cores.
 
-<img width="1718" height="1697" alt="example" src="https://github.com/user-attachments/assets/0db9be80-b55c-4316-bcaa-0ba07b53514b" />
-
-<img width="1701" height="1624" alt="example2" src="https://github.com/user-attachments/assets/278e75b3-100a-49ce-a938-652d56202d78" />
-
-<img width="3556" height="2119" alt="example3" src="https://github.com/user-attachments/assets/3344013c-ecec-48aa-8ec9-cac92bfb3e74" />
-
 ## API
 `corecom_tree(g)`
 
@@ -61,3 +55,4 @@ G.add_edges_from([
 tree = corecom_tree(G)
 print(tree)
 ```
+
